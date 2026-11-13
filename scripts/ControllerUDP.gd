@@ -57,7 +57,11 @@ func _process(_delta: float) -> void:
 		y = new_y
 		button_pressed = new_button == 1
 		joystick_pressed = new_joystick == 1
+		var was_tilted := tilted
 		tilted = new_tilt == 1
+
+		if tilted and not was_tilted:
+			player.try_door_teleport()
 
 		player.update_aim(x, y)
 
