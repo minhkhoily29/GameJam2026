@@ -1,4 +1,3 @@
-// ESP32 game-jam controller
 const int TILT_PIN     = 14;
 const int BUTTON_PIN   = 27;
 const int JOY_BUTTON   = 33;
@@ -11,7 +10,6 @@ unsigned long lastSend = 0;
 void setup() {
   Serial.begin(115200);
 
-  // Switches connect to GND when closed.
   pinMode(TILT_PIN, INPUT_PULLUP);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode(JOY_BUTTON, INPUT_PULLUP);
@@ -19,7 +17,7 @@ void setup() {
   pinMode(JOY_X, INPUT);
   pinMode(JOY_Y, INPUT);
 
-  analogReadResolution(12); // Joystick values: 0–4095
+  analogReadResolution(12);
 }
 
 void loop() {
@@ -34,7 +32,7 @@ void loop() {
   int y = analogRead(JOY_Y);
 
   // 1 = pressed / switch closed, 0 = released / open
-  bool button = digitalRead(BUTTON_PIN) == LOW;
+  bool button = digitalRead(BUTTON_PIN) == HIGH;
   bool joystickButton = digitalRead(JOY_BUTTON) == LOW;
   bool tilt = digitalRead(TILT_PIN) == LOW;
 
