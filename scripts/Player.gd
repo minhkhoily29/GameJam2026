@@ -35,26 +35,63 @@ func update_aim(raw_x: int, raw_y: int) -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	if is_teleporting:
+		velocity = Vector2.ZERO
+		return
 	velocity = move_input * move_speed
 	if move_input.x > 0.05:
 		sprite.flip_h = false  # Face right
 	elif move_input.x < -0.05:
 		sprite.flip_h = true   # Face left
 	move_and_slide()
-
-	# Animate actual movement, so pushing against a wall stops walking.
 	var actual_velocity := get_real_velocity()
 
 	if actual_velocity.length() > 1.0:
 		sprite.play(walk_animation)
-
-		# Your alien artwork faces right by default.
-		if absf(actual_velocity.x) > 1.0:
-			sprite.flip_h = actual_velocity.x < 0.0
 	else:
-		sprite.stop()
-		sprite.frame = 0
+		sprite.play("idle")
+		
+func try_door_teleport() -> void:
+	if is_teleporting:
+		return
+	for door in get_tree().get_nodes_in_group("doors"):
+		if door.try_teleport(self):
+			return
+var is_teleporting: bool = false
 
 
+func teleport_to(destination: Vector2) -> void:
+	if is_teleporting:
+		return
+
+	if not sprite.sprite_frames.has_animation("teleport"):
+		push_error("Missing animation named 'teleport'.")
+		return
+
+	if sprite.sprite_frames.get_animation_loop("teleport"):
+		push_error("Turn off Loop for the teleport animation.")
+		return
+
+	is_teleporting = true
+	velocity = Vector2.ZERO
+
+	# Play from the first frame.
+	sprite.stop()
+	sprite.play("teleport", 1.0, false)
+	await sprite.animation_finished
+
+	global_position = destination
+	$Camera2D.reset_smoothing()
+
+	# Play backward from the last frame.
+	sprite.stop()
+	sprite.play("teleport", -1.0, true)
+	await sprite.animation_finished
+
+	sprite.play("idle")
+	is_teleporting = false
+	
 func shoot() -> void:
+	if is_teleporting:
+		return
 	print("Shoot! Direction: ", facing_direction)
