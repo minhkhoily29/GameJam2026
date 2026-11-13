@@ -5,8 +5,9 @@ extends Area2D
 @export var damage: int = 1
 @export var lifetime: float = 1.25
 
-var direction := Vector2.RIGHT
-var _time_alive := 0.0
+var direction: Vector2 = Vector2.RIGHT
+var _time_alive: float = 0.0
+var _has_hit: bool = false
 
 
 func _ready() -> void:
@@ -20,9 +21,14 @@ func setup(fire_direction: Vector2) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if _has_hit:
+		return
+
 	global_position += direction * speed * delta
 	_time_alive += delta
+
 	if _time_alive >= lifetime:
+		_has_hit = true
 		queue_free()
 
 
@@ -35,10 +41,21 @@ func _on_area_entered(area: Area2D) -> void:
 
 
 func _try_damage(hit: Node) -> void:
-	var target: Node = hit
-	if not target.has_method("take_damage"):
-		target = hit.get_parent()
+	if _has_hit:
+		return
 
-	if target != null and target.has_method("take_damage"):
-		target.take_damage(damage)
-		queue_free()
+	# Find the enemy, including when its hurtbox is nested.
+	var target: Node = hit
+
+	while target != null:
+		if target.has_method("take_damage"):
+			break
+		target = target.get_parent()
+
+	if target == null:
+		return
+
+	# queue_free() is deferred, so block any additional hits now.
+	_has_hit = true
+	target.take_damage(damage)
+	queue_free()

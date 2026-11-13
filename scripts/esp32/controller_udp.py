@@ -32,10 +32,7 @@ try:
                 )
 
                 x, y, button, joystick_button, tilt = values
-                print(
-                    f"Sent: X={x} Y={y} Button={button} "
-                    f"JoystickButton={joystick_button} Tilt={tilt}"
-                )
+                print(f"Sent: X={x} Y={y} Button={button} " f"JoystickButton={joystick_button} Tilt={tilt}")
 
 except KeyboardInterrupt:
     print("\nStopped.")
