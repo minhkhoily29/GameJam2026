@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://c8rqvbxast4or"
+path="res://.godot/imported/foot steps.ogg-24c9d69f9ff507924c07f65fdc5115d5.oggvorbisstr"
+
+[deps]
+
+source_file="res://sound affects/foot steps.ogg"
+dest_files=["res://.godot/imported/foot steps.ogg-24c9d69f9ff507924c07f65fdc5115d5.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

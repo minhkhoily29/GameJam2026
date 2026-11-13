@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://er643xa2r1cs"
+path="res://.godot/imported/collecting flower.mp3-8662726739622d868723e5071d56c11b.mp3str"
+
+[deps]
+
+source_file="res://sound affects/collecting flower.mp3"
+dest_files=["res://.godot/imported/collecting flower.mp3-8662726739622d868723e5071d56c11b.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
