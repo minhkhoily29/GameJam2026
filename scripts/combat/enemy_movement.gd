@@ -4,7 +4,7 @@ extends Node
 
 @export var slow_distance: float = 128.0
 
-@export_range(0.0, 1.0) var slow_multiplier: float = 0.25
+@export_range(0.0, 1.0) var slow_multiplier: float = 0.5
 
 var player: Node2D
 var enemy: Node2D
