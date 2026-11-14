@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" path="res://scenes/snot_bullet.tscn" id="11_snot"]
 [ext_resource type="Script" uid="uid://8lg5hjxowru5" path="res://scripts/FlowerSpawner.gd" id="12_eb6dy"]
 [ext_resource type="PackedScene" uid="uid://dh0ed54i35pqk" path="res://scenes/CosmosFlower.tscn" id="13_trceg"]
+[ext_resource type="Texture2D" uid="uid://dv01aktqnmksr" path="res://assets/ALIEN_MAP_UPPER_LAYER.png" id="15_jkv2x"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_67bfh"]
 size = Vector2(112, 2211)
@@ -62,6 +63,9 @@ size = Vector2(118.5, 81)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_6cslx"]
 size = Vector2(143, 81)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8wvqg"]
+size = Vector2(167, 84)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_o6xl0"]
 atlas = ExtResource("2_tefeu")
@@ -404,6 +408,10 @@ shape = SubResource("RectangleShape2D_qy5u8")
 position = Vector2(72.5, -634.5)
 shape = SubResource("RectangleShape2D_6cslx")
 
+[node name="CollisionShape2D5" type="CollisionShape2D" parent="Walls" unique_id=88525630]
+position = Vector2(-284, -667)
+shape = SubResource("RectangleShape2D_8wvqg")
+
 [node name="CharacterBody2D" type="CharacterBody2D" parent="." unique_id=1095932587 groups=["player"]]
 position = Vector2(-789, -575)
 collision_mask = 3
@@ -521,3 +529,6 @@ position = Vector2(561, 692)
 
 [node name="Flower3" type="Marker2D" parent="FlowerSpawner" unique_id=1842128122]
 position = Vector2(-447, 331)
+
+[node name="MapLayer" type="Sprite2D" parent="." unique_id=1828108245]
+texture = ExtResource("15_jkv2x")
