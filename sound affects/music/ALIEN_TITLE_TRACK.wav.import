@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://gniotjft56nm"
+path="res://.godot/imported/ALIEN_TITLE_TRACK.wav-e19b3ca19a694c3f7ffbab02dca7969e.sample"
+
+[deps]
+
+source_file="res://sound affects/music/ALIEN_TITLE_TRACK.wav"
+dest_files=["res://.godot/imported/ALIEN_TITLE_TRACK.wav-e19b3ca19a694c3f7ffbab02dca7969e.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

@@ -10,9 +10,10 @@
 [ext_resource type="Script" uid="uid://bu2wajpkjnihj" path="res://scripts/Door1.gd" id="7_o6xl0"]
 [ext_resource type="Script" uid="uid://csypic65ohahx" path="res://scripts/Door2.gd" id="8_tipki"]
 [ext_resource type="Texture2D" uid="uid://bfb15f00ohtra" path="res://assets/AlienSneezeAttack.png" id="9_jscy8"]
+[ext_resource type="Texture2D" uid="uid://uexlcpeos5d4" path="res://assets/AlienIdleStiff.png" id="9_pm3ni"]
 [ext_resource type="Script" uid="uid://cb0naltnkkkl1" path="res://scripts/combat/enemy_section.gd" id="9_sections"]
 [ext_resource type="Script" uid="uid://jqgncwxuh3jj" path="res://scripts/combat/weapon.gd" id="10_weapon"]
-[ext_resource type="PackedScene" path="res://scenes/snot_bullet.tscn" id="11_snot"]
+[ext_resource type="PackedScene" uid="uid://bysvorts8qbn7" path="res://scenes/snot_bullet.tscn" id="11_snot"]
 [ext_resource type="Script" uid="uid://8lg5hjxowru5" path="res://scripts/FlowerSpawner.gd" id="12_eb6dy"]
 [ext_resource type="PackedScene" uid="uid://dh0ed54i35pqk" path="res://scenes/CosmosFlower.tscn" id="13_trceg"]
 [ext_resource type="Texture2D" uid="uid://xa0ohopm82mk" path="res://assets/ALIEN_MAP_UPPER_LAYER.png" id="15_jkv2x"]
@@ -194,6 +195,70 @@ region = Rect2(3000, 0, 500, 500)
 atlas = ExtResource("4_choun")
 region = Rect2(3500, 0, 500, 500)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_nvyfr"]
+atlas = ExtResource("9_pm3ni")
+region = Rect2(0, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ty1g6"]
+atlas = ExtResource("9_pm3ni")
+region = Rect2(500, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_j2jfr"]
+atlas = ExtResource("9_pm3ni")
+region = Rect2(1000, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bjg73"]
+atlas = ExtResource("9_pm3ni")
+region = Rect2(1500, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bu4jf"]
+atlas = ExtResource("9_pm3ni")
+region = Rect2(2000, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_o7ddy"]
+atlas = ExtResource("9_pm3ni")
+region = Rect2(2500, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0loja"]
+atlas = ExtResource("9_pm3ni")
+region = Rect2(3000, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ids8r"]
+atlas = ExtResource("9_pm3ni")
+region = Rect2(3500, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dnhof"]
+atlas = ExtResource("9_pm3ni")
+region = Rect2(0, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1v6qk"]
+atlas = ExtResource("9_pm3ni")
+region = Rect2(500, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_augu2"]
+atlas = ExtResource("9_pm3ni")
+region = Rect2(1000, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tm6hj"]
+atlas = ExtResource("9_pm3ni")
+region = Rect2(1500, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kf5aa"]
+atlas = ExtResource("9_pm3ni")
+region = Rect2(2000, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_t5ykj"]
+atlas = ExtResource("9_pm3ni")
+region = Rect2(2500, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_e755i"]
+atlas = ExtResource("9_pm3ni")
+region = Rect2(3000, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ro3en"]
+atlas = ExtResource("9_pm3ni")
+region = Rect2(3500, 0, 500, 500)
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_chjal"]
 atlas = ExtResource("9_jscy8")
 region = Rect2(0, 0, 500, 500)
@@ -319,6 +384,54 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_2f3dj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_nvyfr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ty1g6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_j2jfr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bjg73")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bu4jf")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_o7ddy")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0loja")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ids8r")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dnhof")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1v6qk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_augu2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tm6hj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kf5aa")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_t5ykj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_e755i")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ro3en")
 }],
 "loop": 1,
 "name": &"idle",
@@ -565,7 +678,7 @@ script = ExtResource("1_0wfyh")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CharacterBody2D" unique_id=1160666951]
 scale = Vector2(0.31775007, 0.33249998)
 sprite_frames = SubResource("SpriteFrames_o6kvn")
-animation = &"sneeze"
+animation = &"die"
 autoplay = "idle"
 
 [node name="ControllerUDP" type="Node2D" parent="CharacterBody2D" unique_id=1430847332]
