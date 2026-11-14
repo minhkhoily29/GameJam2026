@@ -217,17 +217,17 @@ func try_door_teleport() -> void:
 var is_teleporting: bool = false
 
 
-func teleport_to(destination: Vector2) -> void:
+func _start_teleport() -> bool:
 	if is_dead or is_teleporting:
-		return
+		return false
 
 	if not sprite.sprite_frames.has_animation("teleport"):
 		push_error("Missing animation named 'teleport'.")
-		return
+		return false
 
 	if sprite.sprite_frames.get_animation_loop("teleport"):
 		push_error("Turn off Loop for the teleport animation.")
-		return
+		return false
 
 	is_teleporting = true
 	_sneeze_playing = false
@@ -239,6 +239,23 @@ func teleport_to(destination: Vector2) -> void:
 	# Play from the first frame.
 	sprite.stop()
 	sprite.play("teleport", 1.0, false)
+	return true
+
+
+func extract_to(ending: PackedScene) -> void:
+	if ending == null or not _start_teleport():
+		return
+	await sprite.animation_finished
+	var error := get_tree().change_scene_to_packed(ending)
+	if error != OK:
+		is_teleporting = false
+		sprite.play("idle")
+		push_error("Could not open the ending: " + error_string(error))
+
+
+func teleport_to(destination: Vector2) -> void:
+	if not _start_teleport():
+		return
 	await sprite.animation_finished
 
 	global_position = destination
