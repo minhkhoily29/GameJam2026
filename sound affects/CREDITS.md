@@ -14,6 +14,7 @@ files can be traced and replaced. Pack license files are included under kenney/.
 | opengameart/snot_hit.wav | impactsplat01.mp3.flac in https://opengameart.org/content/8-wet-squish-slurp-impacts | Independent.nu, submitted by qubodup, CC0 |
 | kenney/knife_slash.wav | knifeSlice.ogg, https://kenney.nl/assets/rpg-audio | Kenney, CC0 |
 | kenney/key_pickup.ogg | handleCoins2.ogg, https://kenney.nl/assets/rpg-audio | Kenney, CC0 |
+| kenney/door_locked.ogg | metalLatch.ogg, https://kenney.nl/assets/rpg-audio | Kenney, CC0 |
 | kenney/player_hit.ogg | impactPunch_medium_000.ogg, https://kenney.nl/assets/impact-sounds | Kenney, CC0 |
 | kenney/enemy_death.ogg | impactSoft_heavy_000.ogg, same Impact Sounds pack | Kenney, CC0 |
 
@@ -33,8 +34,8 @@ recorded in this checkout, so no new license claim is made for those files:
 - flower_pickup.wav: derived from collecting flower.mp3 with 1.416 seconds of
   leading silence and 1.075 seconds of trailing silence removed; plays immediately on successful collection. The
   original MP3 is retained unchanged as a backup.
-- lowFrequency_explosion_000.ogg: final-door explosion at -13 dB on SFX, with
-  pitch 0.9 for a subdued low-frequency effect.
+- lowFrequency_explosion_000.ogg: final-door explosion at -3 dB on SFX, with
+  pitch 1.0 for a loud low-frequency effect.
 - gun.ogg: intentionally unused; the shrimp spits rather than fires a gun.
 
 Knife slash plays when an astronaut starts charging. Accepted nonfatal player
@@ -44,7 +45,13 @@ Enemy death adds a short body impact to its final snot hit.
 
 Escape audio hooks are in scripts/combat/escape_condition.gd. Collecting the key
 plays one key jingle; an accepted final-door explosion plays the bass cue once.
-The actual key pickup and final-door scenes are not wired into this map yet.
+The current map's Player.collect_final_key() plays the pickup cue on the first
+collection. FinalDoor._explode() plays the explosion cue at animation start.
+These use the current player/door logic directly rather than EscapeCondition.
+
+Locked-door feedback is connected to FinalDoor.gd's missing-key branch. It plays a
+quiet, lowered-pitch metal latch, limited to one cue per 600 ms. Successful or
+already-opening door interactions do not trigger it.
 
 All routing and levels are in scripts/audio/audio_manager.gd. SFX, Music and
 Ambience use separate buses. One-shots live under the audio autoload so freeing enemies,

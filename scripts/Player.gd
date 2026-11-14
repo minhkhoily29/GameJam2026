@@ -170,6 +170,8 @@ func receive_enemy_hit(source_position: Vector2, attacker: Node2D = null) -> boo
 func collect_final_key() -> bool:
 	if is_dead:
 		return false
+	if not has_final_key:
+		AudioManager.play_sfx(&"key_pickup")
 	has_final_key = true
 	final_key_collected.emit()
 	print("Key collected! Tilt near the final door to open it.")
@@ -230,6 +232,9 @@ func shoot() -> void:
 
 	var nearest_enemy: Enemy = null
 	var nearest_distance_squared: float = INF
+	var shot_origin := snot_attack.global_position
+	if is_instance_valid(snot_attack.muzzle):
+		shot_origin = snot_attack.muzzle.global_position
 
 	for node in get_tree().get_nodes_in_group("enemies"):
 		var candidate := node as Enemy
@@ -237,8 +242,15 @@ func shoot() -> void:
 			continue
 		if candidate.is_queued_for_deletion() or candidate.health <= 0:
 			continue
-		# Other rooms pause their enemies; don't aim at those inactive enemies.
 		if not candidate.can_process():
+			continue
+		# Room membership does not restrict shooting: use screen visibility and
+		# actual geometry so aim never locks onto enemies behind a wall.
+		if not get_viewport_rect().grow(32.0).has_point(candidate.get_global_transform_with_canvas().origin):
+			continue
+		var sight := PhysicsRayQueryParameters2D.create(shot_origin, candidate.global_position, collision_mask, [get_rid()])
+		var obstruction := get_world_2d().direct_space_state.intersect_ray(sight)
+		if not obstruction.is_empty() and obstruction.collider != candidate:
 			continue
 
 		var distance_squared := global_position.distance_squared_to(candidate.global_position)
@@ -248,9 +260,6 @@ func shoot() -> void:
 
 	var aim_direction := facing_direction
 	if nearest_enemy != null:
-		var shot_origin := snot_attack.global_position
-		if is_instance_valid(snot_attack.muzzle):
-			shot_origin = snot_attack.muzzle.global_position
 		var target_direction := shot_origin.direction_to(nearest_enemy.global_position)
 		if not target_direction.is_zero_approx():
 			aim_direction = target_direction

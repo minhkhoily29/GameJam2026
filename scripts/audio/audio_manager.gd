@@ -14,13 +14,15 @@ const SOUNDS := {
 	&"footstep": [preload("res://sound affects/foot steps.ogg"), -19.0],
 	&"flower_pickup": [preload("res://sound affects/flower_pickup.wav"), -12.0],
 	&"key_pickup": [preload("res://sound affects/kenney/key_pickup.ogg"), -12.0],
-	&"final_door_explosion": [preload("res://sound affects/lowFrequency_explosion_000.ogg"), -13.0],
+	&"final_door_explosion": [preload("res://sound affects/lowFrequency_explosion_000.ogg"), -3.0],
+	&"door_locked": [preload("res://sound affects/kenney/door_locked.ogg"), -12.0],
 }
 var _rng := RandomNumberGenerator.new()
 var _voices: Array[Node] = []
 var _ambience: AudioStreamPlayer
 var _music: AudioStreamPlayer
 var _ambience_users: int = 0
+var _next_locked_door_sound_msec: int = 0
 
 func _ready() -> void:
 	_rng.randomize()
@@ -66,7 +68,9 @@ func play_sfx(event: StringName, world_position: Variant = null) -> Node:
 	elif event == &"player_death":
 		voice.pitch_scale *= 0.8
 	elif event == &"final_door_explosion":
-		voice.pitch_scale = 0.9
+		voice.pitch_scale = 1.0
+	elif event == &"door_locked":
+		voice.pitch_scale *= 0.85
 	add_child(voice)
 	if voice is AudioStreamPlayer2D:
 		voice.global_position = world_position
@@ -74,6 +78,13 @@ func play_sfx(event: StringName, world_position: Variant = null) -> Node:
 	voice.finished.connect(_release_voice.bind(voice), CONNECT_ONE_SHOT)
 	voice.play()
 	return voice
+
+func play_locked_door() -> void:
+	var now := Time.get_ticks_msec()
+	if now < _next_locked_door_sound_msec:
+		return
+	_next_locked_door_sound_msec = now + 600
+	play_sfx(&"door_locked")
 
 func _release_voice(voice: Node) -> void:
 	_voices.erase(voice)

@@ -15,6 +15,7 @@ var wave_number: int = 0
 var enemies_remaining: int = 0
 var _player: CharacterBody2D
 var _active: bool = false
+var _has_entered: bool = false
 var _enemies: Array[CharacterBody2D] = []
 @onready var region: CollisionPolygon2D = $CollisionPolygon2D
 
@@ -23,17 +24,20 @@ func _physics_process(_delta: float) -> void:
 		_player = get_tree().get_first_node_in_group("player") as CharacterBody2D
 	if _player == null:
 		return
+	# Prepare the first wave before entry so enemies can be seen and shot through
+	# an open doorway. Keep their physics bodies active outside the current room.
+	if not has_spawned:
+		_spawn_wave()
 	var inside := overlaps_body(_player) and Geometry2D.is_point_in_polygon(region.to_local(_player.global_position), region.polygon)
 	if inside != _active:
 		_active = inside
 		if inside:
 			var previous: Node = _player.get_meta("enemy_current_section") if _player.has_meta("enemy_current_section") else null
-			if previous != self or not has_spawned:
+			if previous != self:
 				_player.set_meta("enemy_current_section", self)
-				_spawn_wave()
-		for enemy in _enemies:
-			if is_instance_valid(enemy):
-				enemy.process_mode = Node.PROCESS_MODE_INHERIT if inside else Node.PROCESS_MODE_DISABLED
+				if _has_entered:
+					_spawn_wave()
+			_has_entered = true
 
 func _spawn_wave() -> void:
 	if enemy_scene == null:
