@@ -14,7 +14,7 @@ const SOUNDS := {
 	&"footstep": [preload("res://sound affects/foot steps.ogg"), -19.0],
 	&"flower_pickup": [preload("res://sound affects/flower_pickup.wav"), -12.0],
 	&"key_pickup": [preload("res://sound affects/kenney/key_pickup.ogg"), -12.0],
-	&"final_door_explosion": [preload("res://sound affects/lowFrequency_explosion_000.ogg"), -13.0],
+	&"final_door_explosion": [preload("res://sound affects/lowFrequency_explosion_000.ogg"), -3.0],
 	&"door_locked": [preload("res://sound affects/kenney/door_locked.ogg"), -12.0],
 }
 var _rng := RandomNumberGenerator.new()
@@ -68,7 +68,7 @@ func play_sfx(event: StringName, world_position: Variant = null) -> Node:
 	elif event == &"player_death":
 		voice.pitch_scale *= 0.8
 	elif event == &"final_door_explosion":
-		voice.pitch_scale = 0.9
+		voice.pitch_scale = 1.0
 	elif event == &"door_locked":
 		voice.pitch_scale *= 0.85
 	add_child(voice)

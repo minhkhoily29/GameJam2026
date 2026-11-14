@@ -5,9 +5,13 @@ enum State { CHASING, WINDUP, CHARGING, RECOVERING }
 @export_category("Chase")
 @export var normal_speed: float = 200.0
 @export var stop_distance: float = 70.0
+@export var detection_range: float = 300.0
+@export var disengage_range: float = 360.0
+@export var separation_distance: float = 130.0
+@export var separation_strength: float = 0.8
 @export_category("Charge")
 @export var charge_speed: float = 420.0
-@export var charge_range: float = 360.0
+@export var charge_range: float = 260.0
 @export var charge_windup: float = 0.45
 @export var charge_duration: float = 0.65
 @export var recovery_duration: float = 0.6
@@ -32,6 +36,7 @@ var _charge_direction := Vector2.ZERO
 var _sprite: AnimatedSprite2D
 var _collision: CollisionShape2D
 var _slash_playing: bool = false
+var _engaged: bool = false
 
 
 func _ready() -> void:
@@ -65,6 +70,17 @@ func _physics_process(delta: float) -> void:
 	_teleport_timer = maxf(_teleport_timer - delta, 0.0)
 	_teleport_retry_timer = maxf(_teleport_retry_timer - delta, 0.0)
 	var offset := player.global_position - enemy.global_position
+	var visible_player := _has_clear_path(enemy.global_position, player.global_position)
+	if _engaged:
+		_engaged = offset.length() <= maxf(disengage_range, detection_range) and visible_player
+	else:
+		_engaged = offset.length() <= detection_range and visible_player
+	if not _engaged:
+		state = State.CHASING
+		_state_time = 0.0
+		_slash_playing = false
+		_update_sprite()
+		return
 	if state in [State.CHASING, State.CHARGING] and _teleport_timer <= 0.0 and _teleport_retry_timer <= 0.0:
 		if offset.length() <= teleport_trigger_distance and _has_clear_path(enemy.global_position, player.global_position):
 			var minimum := maxf(teleport_min_distance, 1.0)
@@ -88,7 +104,7 @@ func _physics_process(delta: float) -> void:
 				state = State.WINDUP
 				_state_time = maxf(charge_windup, 0.0)
 			elif offset.length() > stop_distance:
-				enemy.velocity = offset.normalized() * normal_speed
+				enemy.velocity = (offset.normalized() + _separation_push() * separation_strength).normalized() * normal_speed
 		State.WINDUP:
 			if _state_time <= 0.0:
 				state = State.CHARGING
@@ -158,6 +174,8 @@ func _teleport_to_clear_spot(minimum: float, maximum: float, attempts: int) -> b
 			angle = float(sample_index % 64) * TAU / 64.0
 			radius = lerpf(minimum, maximum, floorf(sample_index / 64.0) / 4.0)
 		var destination := player.global_position + Vector2.RIGHT.rotated(angle) * radius
+		if _near_other_enemy(destination):
+			continue
 		if destination.distance_to(enemy.global_position) < teleport_min_displacement:
 			continue
 		var section: Node = enemy.get_meta("spawn_section") if enemy.has_meta("spawn_section") else null
@@ -176,6 +194,26 @@ func _teleport_to_clear_spot(minimum: float, maximum: float, attempts: int) -> b
 		enemy.reset_physics_interpolation()
 		AudioManager.play_sfx(&"enemy_teleport", destination)
 		return true
+	return false
+
+
+func _separation_push() -> Vector2:
+	var push := Vector2.ZERO
+	for other in get_tree().get_nodes_in_group("enemies"):
+		if other == enemy or not other is Node2D or other.is_queued_for_deletion():
+			continue
+		var away := enemy.global_position - (other as Node2D).global_position
+		var distance := away.length()
+		if distance > 0.01 and distance < separation_distance:
+			push += away / distance * (1.0 - distance / separation_distance)
+	return push.limit_length()
+
+
+func _near_other_enemy(destination: Vector2) -> bool:
+	for other in get_tree().get_nodes_in_group("enemies"):
+		if other != enemy and other is Node2D and not other.is_queued_for_deletion():
+			if destination.distance_to((other as Node2D).global_position) < separation_distance:
+				return true
 	return false
 
 

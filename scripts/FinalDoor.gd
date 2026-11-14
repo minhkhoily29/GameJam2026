@@ -45,6 +45,7 @@ func try_open(player: CharacterBody2D) -> bool:
 
 
 func _explode() -> void:
+	AudioManager.play_sfx(&"final_door_explosion")
 	sprite.sprite_frames.set_animation_loop(explosion_animation, false)
 	sprite.speed_scale = 1.0
 	sprite.play(explosion_animation, 1.0, false)

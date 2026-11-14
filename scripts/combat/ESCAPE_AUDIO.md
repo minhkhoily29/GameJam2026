@@ -14,7 +14,7 @@ first accepted interaction it plays `final_door_explosion`, sets
 `is_final_door_open`, emits `final_door_exploded`, and returns true. Connect that
 signal to the final-door animation/blocker removal when those scenes are added.
 
-The explosion reuses the project's lowFrequency_explosion_000.ogg at -13 dB,
-through the SFX bus (-2 dB), with fixed pitch 0.9. It is intentionally a low,
-restrained boom. The audio manager owns playback so removing the door node will
+The explosion reuses the project's lowFrequency_explosion_000.ogg at -3 dB,
+through the SFX bus (-2 dB), with fixed pitch 1.0. It is intentionally a low,
+loud boom. The audio manager owns playback so removing the door node will
 not cut off the sound. Balance levels in scripts/audio/audio_manager.gd.
