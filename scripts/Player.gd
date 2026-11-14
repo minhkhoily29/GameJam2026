@@ -95,3 +95,15 @@ func shoot() -> void:
 	if is_teleporting:
 		return
 	print("Shoot! Direction: ", facing_direction)
+	
+func apply_cosmos_buff(
+	damage_multiplier: float,
+	speed_multiplier: float
+) -> void:
+	move_speed *= speed_multiplier
+	$Weapon.damage_multiplier *= damage_multiplier
+
+	print(
+		"Flower collected! Speed: ", move_speed,
+		" Damage multiplier: ", $Weapon.damage_multiplier
+	)

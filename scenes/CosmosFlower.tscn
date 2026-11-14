@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://dh0ed54i35pqk"]
+
+[ext_resource type="Texture2D" uid="uid://cwv1unp54ffb8" path="res://assets/ALIEN_COSMO_COLLECTIBLE.png" id="1_quu4h"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_67bfh"]
+radius = 53.08484
+
+[node name="Node2D" type="Area2D" unique_id=1563251331]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1352892268]
+texture = ExtResource("1_quu4h")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=190479126]
+shape = SubResource("CircleShape2D_67bfh")
