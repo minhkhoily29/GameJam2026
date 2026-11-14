@@ -30,7 +30,7 @@ const SOUNDS := {
 	&"flower_pickup": [preload("res://sound affects/flower_pickup.wav"), -6.0],
 	&"key_pickup": [preload("res://sound affects/kenney/key_pickup.ogg"), 8.0],
 	&"final_door_explosion": [preload("res://sound affects/opengameart/final_door_grenade.wav"), -1.0],
-	&"door_locked": [preload("res://sound affects/kenney/door_locked.ogg"), -12.0],
+	&"door_locked": [preload("res://sound affects/nuh uh short.wav"), 10.0],
 }
 var _rng := RandomNumberGenerator.new()
 var _voices: Array[Node] = []
