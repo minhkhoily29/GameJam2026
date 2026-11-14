@@ -3,7 +3,7 @@ extends Node
 enum State { CHASING, WINDUP, CHARGING, RECOVERING }
 
 @export_category("Chase")
-@export var normal_speed: float = 120.0
+@export var normal_speed: float = 200.0
 @export var stop_distance: float = 70.0
 @export_category("Charge")
 @export var charge_speed: float = 420.0
@@ -12,10 +12,13 @@ enum State { CHASING, WINDUP, CHARGING, RECOVERING }
 @export var charge_duration: float = 0.65
 @export var recovery_duration: float = 0.6
 @export var charge_cooldown: float = 2.5
-@export_category("Retreat after hitting player")
+@export_category("Teleport near player")
 @export var teleport_attempts: int = 60
-@export var retreat_min_distance: float = 240.0
-@export var retreat_max_distance: float = 400.0
+@export var teleport_cooldown: float = 5.0
+@export var teleport_trigger_distance: float = 240.0
+@export var teleport_min_distance: float = 100.0
+@export var teleport_max_distance: float = 150.0
+@export var teleport_min_displacement: float = 80.0
 @export var hit_recovery_duration: float = 1.2
 
 var player: Node2D
@@ -23,6 +26,8 @@ var enemy: CharacterBody2D
 var state: State = State.CHASING
 var _state_time: float = 0.0
 var _charge_timer: float = 0.0
+var _teleport_timer: float = 0.0
+var _teleport_retry_timer: float = 0.0
 var _charge_direction := Vector2.ZERO
 var _sprite: AnimatedSprite2D
 var _collision: CollisionShape2D
@@ -50,7 +55,21 @@ func _physics_process(delta: float) -> void:
 	_charge_timer = maxf(_charge_timer - delta, 0.0)
 	_state_time = maxf(_state_time - delta, 0.0)
 	enemy.velocity = Vector2.ZERO
+	_teleport_timer = maxf(_teleport_timer - delta, 0.0)
+	_teleport_retry_timer = maxf(_teleport_retry_timer - delta, 0.0)
 	var offset := player.global_position - enemy.global_position
+	if state in [State.CHASING, State.CHARGING] and _teleport_timer <= 0.0 and _teleport_retry_timer <= 0.0:
+		if offset.length() <= teleport_trigger_distance and _has_clear_path(enemy.global_position, player.global_position):
+			var minimum := maxf(teleport_min_distance, 1.0)
+			if _teleport_to_clear_spot(minimum, maxf(teleport_max_distance, minimum), teleport_attempts):
+				_teleport_timer = maxf(teleport_cooldown, 0.0)
+				offset = player.global_position - enemy.global_position
+				_charge_direction = offset.normalized()
+				state = State.CHARGING
+				_state_time = maxf(charge_duration, 0.0)
+			else:
+				# Retry later if the room is too crowded; keep chasing meanwhile.
+				_teleport_retry_timer = 0.5
 	match state:
 		State.CHASING:
 			# Stopping distance only pauses the chase; it must never block attacking.
@@ -99,9 +118,8 @@ func _begin_recovery() -> void:
 
 func retreat_after_hit(target: Node2D) -> void:
 	player = target
-	var minimum := maxf(retreat_min_distance, stop_distance + 1.0)
-	_teleport_to_clear_spot(minimum, maxf(retreat_max_distance, minimum), teleport_attempts)
-	# Always give breathing room, including when a cramped room has no safe spot.
+	# Keep the hit callback without triggering an extra teleport.
+	# Always give breathing room, after a successful attack.
 	_begin_recovery()
 	_state_time = maxf(hit_recovery_duration, recovery_duration)
 	_update_sprite()
@@ -129,6 +147,8 @@ func _teleport_to_clear_spot(minimum: float, maximum: float, attempts: int) -> b
 			angle = float(sample_index % 64) * TAU / 64.0
 			radius = lerpf(minimum, maximum, floorf(sample_index / 64.0) / 4.0)
 		var destination := player.global_position + Vector2.RIGHT.rotated(angle) * radius
+		if destination.distance_to(enemy.global_position) < teleport_min_displacement:
+			continue
 		var section: Node = enemy.get_meta("spawn_section") if enemy.has_meta("spawn_section") else null
 		if is_instance_valid(section) and not section.contains_body_position(destination, _collision):
 			continue

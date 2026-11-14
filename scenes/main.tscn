@@ -1,17 +1,19 @@
 [gd_scene format=3 uid="uid://boskggorwimm3"]
 
-[ext_resource type="Script" path="res://scripts/combat/enemy_section.gd" id="9_sections"]
-[ext_resource type="Script" path="res://scripts/combat/weapon.gd" id="10_weapon"]
-[ext_resource type="PackedScene" path="res://scenes/snot_bullet.tscn" id="11_snot"]
-
 [ext_resource type="Script" uid="uid://c8x6fslv15gol" path="res://scripts/Player.gd" id="1_0wfyh"]
 [ext_resource type="Texture2D" uid="uid://dd7wehh4u1ixd" path="res://assets/ALIEN_MAP.png" id="1_tbgi4"]
 [ext_resource type="Script" uid="uid://cw6dwya31t5a1" path="res://scripts/ControllerUDP.gd" id="2_sugp2"]
 [ext_resource type="Texture2D" uid="uid://cxktrpq1weqif" path="res://assets/AlienWalkFixed.png" id="2_tefeu"]
-[ext_resource type="Texture2D" uid="uid://bumi35yf0vmu8" path="res://assets/Alien_Diesno_tears.png" id="4_85g3d"]
+[ext_resource type="Texture2D" uid="uid://8wi6foc8w6gi" path="res://assets/Alien_Dies.png" id="4_85g3d"]
 [ext_resource type="Texture2D" uid="uid://bbs53y17qf2ha" path="res://assets/AlienIdleBlinkStiff.png" id="4_choun"]
+[ext_resource type="Texture2D" uid="uid://bumi35yf0vmu8" path="res://assets/Alien_Diesno_tears.png" id="6_a8y0u"]
 [ext_resource type="Script" uid="uid://bu2wajpkjnihj" path="res://scripts/Door1.gd" id="7_o6xl0"]
 [ext_resource type="Script" uid="uid://csypic65ohahx" path="res://scripts/Door2.gd" id="8_tipki"]
+[ext_resource type="Script" uid="uid://cb0naltnkkkl1" path="res://scripts/combat/enemy_section.gd" id="9_sections"]
+[ext_resource type="Script" uid="uid://jqgncwxuh3jj" path="res://scripts/combat/weapon.gd" id="10_weapon"]
+[ext_resource type="PackedScene" path="res://scenes/snot_bullet.tscn" id="11_snot"]
+[ext_resource type="Script" uid="uid://8lg5hjxowru5" path="res://scripts/FlowerSpawner.gd" id="12_eb6dy"]
+[ext_resource type="PackedScene" uid="uid://dh0ed54i35pqk" path="res://scenes/CosmosFlower.tscn" id="13_trceg"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_67bfh"]
 size = Vector2(112, 2211)
@@ -93,6 +95,34 @@ region = Rect2(3000, 0, 500, 500)
 atlas = ExtResource("2_tefeu")
 region = Rect2(3500, 0, 500, 500)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_yq6so"]
+atlas = ExtResource("4_85g3d")
+region = Rect2(0, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fv21b"]
+atlas = ExtResource("4_85g3d")
+region = Rect2(500, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tel4y"]
+atlas = ExtResource("4_85g3d")
+region = Rect2(1000, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qkpxi"]
+atlas = ExtResource("4_85g3d")
+region = Rect2(1500, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5q0nq"]
+atlas = ExtResource("4_85g3d")
+region = Rect2(2000, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dgi5k"]
+atlas = ExtResource("4_85g3d")
+region = Rect2(2500, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_j8jky"]
+atlas = ExtResource("4_85g3d")
+region = Rect2(3000, 0, 500, 500)
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_yc10j"]
 atlas = ExtResource("4_choun")
 region = Rect2(0, 0, 500, 500)
@@ -126,27 +156,27 @@ atlas = ExtResource("4_choun")
 region = Rect2(3500, 0, 500, 500)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_jkv2x"]
-atlas = ExtResource("4_85g3d")
+atlas = ExtResource("6_a8y0u")
 region = Rect2(0, 0, 500, 500)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_jbj1t"]
-atlas = ExtResource("4_85g3d")
+atlas = ExtResource("6_a8y0u")
 region = Rect2(500, 0, 500, 500)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_muem4"]
-atlas = ExtResource("4_85g3d")
+atlas = ExtResource("6_a8y0u")
 region = Rect2(1000, 0, 500, 500)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_dp3eg"]
-atlas = ExtResource("4_85g3d")
+atlas = ExtResource("6_a8y0u")
 region = Rect2(1500, 0, 500, 500)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_0ld40"]
-atlas = ExtResource("4_85g3d")
+atlas = ExtResource("6_a8y0u")
 region = Rect2(2000, 0, 500, 500)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_gqmmt"]
-atlas = ExtResource("4_85g3d")
+atlas = ExtResource("6_a8y0u")
 region = Rect2(2500, 0, 500, 500)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_o6kvn"]
@@ -179,6 +209,32 @@ animations = [{
 "loop": 1,
 "name": &"default",
 "speed": 15.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yq6so")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fv21b")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tel4y")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qkpxi")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5q0nq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dgi5k")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_j8jky")
+}],
+"loop": 1,
+"name": &"die",
+"speed": 5.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -356,15 +412,14 @@ script = ExtResource("1_0wfyh")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CharacterBody2D" unique_id=1160666951]
 scale = Vector2(0.31775007, 0.33249998)
 sprite_frames = SubResource("SpriteFrames_o6kvn")
-animation = &"idle"
+animation = &"die"
 autoplay = "idle"
-frame = 6
-frame_progress = 0.5210613
+frame_progress = 0.68481934
 
 [node name="ControllerUDP" type="Node2D" parent="CharacterBody2D" unique_id=1430847332]
 script = ExtResource("2_sugp2")
 
-[node name="SnotAttack" type="Node2D" parent="CharacterBody2D"]
+[node name="SnotAttack" type="Node2D" parent="CharacterBody2D" unique_id=284211833]
 position = Vector2(0, 6)
 script = ExtResource("10_weapon")
 projectile_scene = ExtResource("11_snot")
@@ -383,45 +438,38 @@ position_smoothing_enabled = true
 
 [node name="Enemies" type="Node2D" parent="." unique_id=552467915]
 
-[node name="CaptivityRoom" type="Area2D" parent="Enemies"]
+[node name="CaptivityRoom" type="Area2D" parent="Enemies" unique_id=1842764827]
+process_mode = 4
 collision_layer = 0
-collision_mask = 1
 script = ExtResource("9_sections")
 minimum_enemies = 1
 maximum_enemies = 1
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/CaptivityRoom"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/CaptivityRoom" unique_id=59516718]
 polygon = PackedVector2Array(-1080, -700, -510, -700, -510, -290, -1080, -290)
 
-[node name="CargoRoom" type="Area2D" parent="Enemies"]
+[node name="CargoRoom" type="Area2D" parent="Enemies" unique_id=1652431047]
 collision_layer = 0
-collision_mask = 1
 script = ExtResource("9_sections")
 minimum_enemies = 1
 maximum_enemies = 1
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/CargoRoom"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/CargoRoom" unique_id=1568789843]
 polygon = PackedVector2Array(-395, -700, 65, -700, 65, -290, -395, -290)
 
-[node name="MessHall" type="Area2D" parent="Enemies"]
+[node name="MessHall" type="Area2D" parent="Enemies" unique_id=920052650]
 collision_layer = 0
-collision_mask = 1
 script = ExtResource("9_sections")
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/MessHall"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/MessHall" unique_id=1861908371]
 polygon = PackedVector2Array(-1080, 0, 140, 0, 140, 430, 1080, 430, 1080, 990, -1080, 990)
 
-[node name="ObservationRoom" type="Area2D" parent="Enemies"]
+[node name="ObservationRoom" type="Area2D" parent="Enemies" unique_id=2116962393]
 collision_layer = 0
-collision_mask = 1
 script = ExtResource("9_sections")
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/ObservationRoom"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/ObservationRoom" unique_id=1154565772]
 polygon = PackedVector2Array(280, -700, 990, -700, 990, 430, 280, 430)
-
-[node name="SpawnPoints" type="Node2D" parent="." unique_id=1764260805]
-visible = false
-position = Vector2(-668, -524)
 
 [node name="Door1" type="Area2D" parent="." unique_id=1601619102]
 script = ExtResource("7_o6xl0")
@@ -460,3 +508,16 @@ position = Vector2(-52, -374)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Door2/StaticBody2D" unique_id=1551219812]
 position = Vector2(-54.25, -179.75)
 shape = SubResource("RectangleShape2D_lnus7")
+
+[node name="FlowerSpawner" type="Node2D" parent="." unique_id=89497195]
+script = ExtResource("12_eb6dy")
+flower_scene = ExtResource("13_trceg")
+
+[node name="Flower1" type="Marker2D" parent="FlowerSpawner" unique_id=1694793174]
+position = Vector2(-131, -601)
+
+[node name="Flower2" type="Marker2D" parent="FlowerSpawner" unique_id=778248862]
+position = Vector2(561, 692)
+
+[node name="Flower3" type="Marker2D" parent="FlowerSpawner" unique_id=1842128122]
+position = Vector2(-447, 331)

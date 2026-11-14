@@ -1,8 +1,8 @@
 class_name Enemy
 extends CharacterBody2D
 
-## Temporary jam balance: every enemy takes exactly two normal shots.
-@export var max_health: int = 2
+## Temporary jam balance: every enemy starts with three health.
+@export var max_health: int = 3
 
 var health: int
 var _hit_flash_time: float = 0.0
