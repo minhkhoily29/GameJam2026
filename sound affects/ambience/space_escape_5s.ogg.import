@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://b7db6f370tyyi"
+path="res://.godot/imported/space_escape_5s.ogg-e465353a0480cab021fd544d102765dd.oggvorbisstr"
+
+[deps]
+
+source_file="res://sound affects/ambience/space_escape_5s.ogg"
+dest_files=["res://.godot/imported/space_escape_5s.ogg-e465353a0480cab021fd544d102765dd.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
