@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bdkv1q3oyrmcd"
+path="res://.godot/imported/extraction_victory.wav-4bf5fdc2db2c1dbabb1f16ff051a7264.sample"
+
+[deps]
+
+source_file="res://sound affects/extraction_victory.wav"
+dest_files=["res://.godot/imported/extraction_victory.wav-4bf5fdc2db2c1dbabb1f16ff051a7264.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

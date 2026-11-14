@@ -1,7 +1,6 @@
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/ENDING.png" id="1_ending"]
-
 [ext_resource type="Script" path="res://scripts/ending.gd" id="2_ending"]
 
 [node name="Ending" type="ColorRect"]

@@ -16,6 +16,8 @@ const CUE_HOLD_SECONDS := {
 	&"key_pickup": 0.4,
 	&"door_locked": 0.2,
 	&"final_door_explosion": 1.2,
+	&"extraction_countdown": 5.0,
+	&"extraction_victory": 5.0,
 }
 const SOUNDS := {
 	&"snot_shoot": [preload("res://sound affects/opengameart/snot_spit.wav"), -5.0],
@@ -31,6 +33,8 @@ const SOUNDS := {
 	&"key_pickup": [preload("res://sound affects/kenney/key_pickup.ogg"), 8.0],
 	&"final_door_explosion": [preload("res://sound affects/opengameart/final_door_grenade.wav"), -1.0],
 	&"door_locked": [preload("res://sound affects/nuh uh short.wav"), 10.0],
+	&"extraction_countdown": [preload("res://sound affects/extraction_countdown.mp3"), 2.0],
+	&"extraction_victory": [preload("res://sound affects/extraction_victory.wav"), 14.0],
 }
 var _rng := RandomNumberGenerator.new()
 var _voices: Array[Node] = []
@@ -106,9 +110,14 @@ func play_sfx(event: StringName, world_position: Variant = null) -> Node:
 		voice = AudioStreamPlayer.new()
 	voice.stream = SOUNDS[event][0]
 	voice.volume_db = SOUNDS[event][1]
-	voice.bus = &"Routine" if ROUTINE_EVENTS.has(event) else &"SFX"
+	voice.bus = &"Music" if event == &"extraction_victory" else (&"Routine" if ROUTINE_EVENTS.has(event) else &"SFX")
 	voice.pitch_scale = _rng.randf_range(0.96, 1.04)
 	if event == &"enemy_teleport":
+		voice.pitch_scale = 1.0
+	elif event == &"extraction_countdown":
+		# Slow the 4.2-second blast-off cue to fill the five-second extraction.
+		voice.pitch_scale = 0.84
+	elif event == &"extraction_victory":
 		voice.pitch_scale = 1.0
 	elif event == &"player_death":
 		voice.pitch_scale *= 0.8
@@ -136,6 +145,14 @@ func _release_voice(voice: Node) -> void:
 	if is_instance_valid(voice):
 		voice.queue_free()
 
+func stop_voice(voice: Node) -> void:
+	_voices.erase(voice)
+	if not is_instance_valid(voice):
+		return
+	voice.stop()
+	voice.stream = null
+	voice.queue_free()
+
 func stop_all_sfx() -> void:
 	for voice in _voices:
 		if is_instance_valid(voice):
@@ -146,6 +163,20 @@ func stop_all_sfx() -> void:
 	_cue_time_left = 0.0
 	_refresh_mix()
 	set_process(false)
+
+func stop_all_audio() -> void:
+	stop_all_sfx()
+	_ambience_users = 0
+	_music_ducked = false
+	_engine_paused = false
+	for voice in [_ambience, _music]:
+		if is_instance_valid(voice):
+			voice.stop()
+			voice.stream = null
+			voice.queue_free()
+	_ambience = null
+	_music = null
+	_refresh_mix()
 
 func set_music_ducked(active: bool) -> void:
 	_music_ducked = active
