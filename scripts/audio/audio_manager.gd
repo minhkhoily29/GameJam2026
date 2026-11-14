@@ -3,18 +3,32 @@ extends Node
 ## pitch variation never changes seeded enemy spawning or teleport placement.
 const MAX_VOICES := 32
 const MUSIC_DUCK_DB: float = -8.0
+const CUE_MUSIC_DUCK_DB: float = -4.0
+const ROUTINE_DUCK_DB: float = -5.0
+const ROUTINE_EVENTS := [&"snot_shoot", &"footstep", &"door_slide"]
+const CUE_HOLD_SECONDS := {
+	&"knife_slash": 0.2,
+	&"player_hit": 0.35,
+	&"enemy_death": 0.3,
+	&"player_death": 0.6,
+	&"enemy_teleport": 0.65,
+	&"flower_pickup": 0.4,
+	&"key_pickup": 0.4,
+	&"door_locked": 0.2,
+	&"final_door_explosion": 1.2,
+}
 const SOUNDS := {
-	&"snot_shoot": [preload("res://sound affects/opengameart/snot_spit.wav"), -8.0],
-	&"snot_hit": [preload("res://sound affects/opengameart/snot_hit.wav"), -13.0],
-	&"knife_slash": [preload("res://sound affects/kenney/knife_slash.wav"), -10.0],
-	&"player_hit": [preload("res://sound affects/kenney/player_hit.ogg"), -10.0],
+	&"snot_shoot": [preload("res://sound affects/opengameart/snot_spit.wav"), -5.0],
+	&"snot_hit": [preload("res://sound affects/opengameart/snot_hit.wav"), -11.0],
+	&"knife_slash": [preload("res://sound affects/kenney/knife_slash.wav"), -4.0],
+	&"player_hit": [preload("res://sound affects/kenney/player_hit.ogg"), -6.0],
 	&"enemy_death": [preload("res://sound affects/enemy_vanish.wav"), -2.0],
 	&"player_death": [preload("res://sound affects/slime for door.ogg"), -5.0],
-	&"door_slide": [preload("res://sound affects/slime for door.ogg"), -9.0],
-	&"enemy_teleport": [preload("res://sound affects/opengameart/enemy_teleport_02.ogg"), -7.0],
-	&"footstep": [preload("res://sound affects/foot steps.ogg"), -19.0],
-	&"flower_pickup": [preload("res://sound affects/flower_pickup.wav"), -12.0],
-	&"key_pickup": [preload("res://sound affects/kenney/key_pickup.ogg"), -12.0],
+	&"door_slide": [preload("res://sound affects/slime for door.ogg"), -13.0],
+	&"enemy_teleport": [preload("res://sound affects/opengameart/enemy_teleport_02_immediate.wav"), -3.0],
+	&"footstep": [preload("res://sound affects/foot steps.ogg"), -21.0],
+	&"flower_pickup": [preload("res://sound affects/flower_pickup.wav"), -6.0],
+	&"key_pickup": [preload("res://sound affects/kenney/key_pickup.ogg"), 8.0],
 	&"final_door_explosion": [preload("res://sound affects/opengameart/final_door_grenade.wav"), -1.0],
 	&"door_locked": [preload("res://sound affects/kenney/door_locked.ogg"), -12.0],
 }
@@ -24,6 +38,7 @@ var _ambience: AudioStreamPlayer
 var _music: AudioStreamPlayer
 var _music_ducked := false
 var _engine_paused := false
+var _cue_time_left: float = 0.0
 var _ambience_users: int = 0
 var _next_locked_door_sound_msec: int = 0
 
@@ -31,15 +46,41 @@ func _ready() -> void:
 	_rng.randomize()
 	_ensure_bus(&"SFX", -2.0)
 	_ensure_bus(&"Ambience", -34.0)
-	_ensure_bus(&"Music", -15.0)
+	_ensure_bus(&"Music", -18.0)
+	_ensure_bus(&"Routine", 0.0, &"SFX")
+	set_process(false)
 
-func _ensure_bus(bus_name: StringName, volume: float) -> void:
+func _ensure_bus(bus_name: StringName, volume: float, send: StringName = &"Master") -> void:
 	if AudioServer.get_bus_index(bus_name) < 0:
 		AudioServer.add_bus()
 		var index := AudioServer.bus_count - 1
 		AudioServer.set_bus_name(index, bus_name)
-		AudioServer.set_bus_send(index, &"Master")
+		AudioServer.set_bus_send(index, send)
 		AudioServer.set_bus_volume_db(index, volume)
+
+func _process(delta: float) -> void:
+	_cue_time_left = maxf(_cue_time_left - delta, 0.0)
+	if _cue_time_left <= 0.0:
+		_refresh_mix()
+		set_process(false)
+
+func _music_gain() -> float:
+	var state_gain := MUSIC_DUCK_DB if _music_ducked else 0.0
+	return minf(state_gain, CUE_MUSIC_DUCK_DB) if _cue_time_left > 0.0 else state_gain
+
+func _refresh_mix() -> void:
+	if is_instance_valid(_music):
+		_music.volume_db = _music_gain()
+	var routine_bus := AudioServer.get_bus_index(&"Routine")
+	if routine_bus >= 0:
+		AudioServer.set_bus_volume_db(routine_bus, ROUTINE_DUCK_DB if _cue_time_left > 0.0 else 0.0)
+
+func _make_room_for_cue(event: StringName) -> void:
+	if not CUE_HOLD_SECONDS.has(event):
+		return
+	_cue_time_left = maxf(_cue_time_left, CUE_HOLD_SECONDS[event])
+	_refresh_mix()
+	set_process(true)
 
 func play_sfx(event: StringName, world_position: Variant = null) -> Node:
 	if not SOUNDS.has(event):
@@ -48,6 +89,7 @@ func play_sfx(event: StringName, world_position: Variant = null) -> Node:
 	# Headless/server runs do not need an audio device.
 	if DisplayServer.get_name() == "headless":
 		return null
+	_make_room_for_cue(event)
 	while _voices.size() >= MAX_VOICES:
 		var oldest := _voices.pop_front() as Node
 		if is_instance_valid(oldest):
@@ -64,7 +106,7 @@ func play_sfx(event: StringName, world_position: Variant = null) -> Node:
 		voice = AudioStreamPlayer.new()
 	voice.stream = SOUNDS[event][0]
 	voice.volume_db = SOUNDS[event][1]
-	voice.bus = &"SFX"
+	voice.bus = &"Routine" if ROUTINE_EVENTS.has(event) else &"SFX"
 	voice.pitch_scale = _rng.randf_range(0.96, 1.04)
 	if event == &"enemy_teleport":
 		voice.pitch_scale = 1.0
@@ -101,11 +143,13 @@ func stop_all_sfx() -> void:
 			voice.stream = null
 			voice.queue_free()
 	_voices.clear()
+	_cue_time_left = 0.0
+	_refresh_mix()
+	set_process(false)
 
 func set_music_ducked(active: bool) -> void:
 	_music_ducked = active
-	if is_instance_valid(_music):
-		_music.volume_db = MUSIC_DUCK_DB if active else 0.0
+	_refresh_mix()
 
 func set_engine_paused(active: bool) -> void:
 	_engine_paused = active
@@ -124,7 +168,7 @@ func start_ambience() -> void:
 		theme.loop_end = roundi(theme.get_length() * theme.mix_rate)
 		_music.stream = theme
 		_music.bus = &"Music"
-		_music.volume_db = MUSIC_DUCK_DB if _music_ducked else 0.0
+		_music.volume_db = _music_gain()
 		add_child(_music)
 		_music.play()
 	if is_instance_valid(_ambience):
