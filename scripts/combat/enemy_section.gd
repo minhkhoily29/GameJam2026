@@ -67,57 +67,61 @@ func _spawn_wave() -> void:
 			enemy.free()
 			push_error("Section enemy needs a CollisionShape2D.")
 			break
-		var placed := false
-		for attempt in range(placement_attempts):
-			var zone := _spawn_zone(bounds, i, attempt)
-			var local_point := Vector2(randf_range(zone.position.x, zone.end.x), randf_range(zone.position.y, zone.end.y))
-			var destination := region.to_global(local_point)
-			if destination.distance_to(_player.global_position) < player_clearance:
-				continue
-			if not contains_body_position(destination, collision):
-				continue
-			var too_close := false
-			for point in points:
-				if point.distance_to(destination) < enemy_spacing:
-					too_close = true
-					break
-			if too_close:
-				continue
-			var query := PhysicsShapeQueryParameters2D.new()
-			query.shape = collision.shape
-			query.transform = Transform2D(0.0, destination) * collision.transform
-			query.collision_mask = enemy.collision_mask
-			query.margin = 6.0
-			if not get_world_2d().direct_space_state.intersect_shape(query, 1).is_empty():
-				continue
-			enemy.set_meta("spawn_section", self)
-			enemy.position = to_local(destination)
-			enemy.died.connect(_on_enemy_died, CONNECT_ONE_SHOT)
-			add_child(enemy)
-			_enemies.append(enemy)
-			points.append(destination)
-			enemies_remaining += 1
-			placed = true
-			break
-		if not placed:
+		var destination = _find_spawn_point(bounds, i, enemy, collision, points)
+		if destination == null:
 			enemy.free()
 			push_warning("Could not find a clear enemy spawn in section %s." % name)
+			continue
+		enemy.set_meta("spawn_section", self)
+		enemy.position = to_local(destination)
+		enemy.died.connect(_on_enemy_died, CONNECT_ONE_SHOT)
+		add_child(enemy)
+		_enemies.append(enemy)
+		points.append(destination)
+		enemies_remaining += 1
 	section_spawned.emit(enemies_remaining)
 
-func _spawn_zone(bounds: Rect2, index: int, attempt: int) -> Rect2:
-	if spawn_layout == SpawnLayout.SPREAD:
-		# Cover left and right, top and bottom before filling the middle cells.
-		var cells := [Vector2(0, 0), Vector2(2, 1), Vector2(0, 1), Vector2(2, 0), Vector2(1, 0), Vector2(1, 1)]
-		var size := bounds.size / Vector2(3, 2)
-		return Rect2(bounds.position + cells[index % cells.size()] * size, size)
-	if spawn_layout == SpawnLayout.CORNERS:
-		var corner := Vector2(index % 2, (index / 2) % 2)
-		# Prefer the outer quarters. Broaden within the same quadrant if the
-		# player/obstacles make a corner unsafe, never use another corner's slot.
-		var fraction := 0.25 if attempt < placement_attempts * 0.8 else 0.5
-		var size := bounds.size * fraction
-		return Rect2(bounds.position + corner * (bounds.size - size), size)
-	return bounds
+func _find_spawn_point(bounds: Rect2, index: int, enemy: CharacterBody2D, collision: CollisionShape2D, points: Array[Vector2]) -> Variant:
+	var space := get_world_2d().direct_space_state
+	var query := PhysicsShapeQueryParameters2D.new()
+	query.shape = collision.shape
+	query.collision_mask = enemy.collision_mask
+	query.margin = 6.0
+	var best: Variant = null
+	var best_score := -1.0
+	var valid_samples := 0
+	var center := region.to_global(bounds.get_center())
+
+	for attempt in range(placement_attempts):
+		var zone := bounds
+		if spawn_layout == SpawnLayout.CORNERS and attempt < placement_attempts / 2.0:
+			var corner := Vector2(index % 2, floori(index / 2.0) % 2)
+			var size := bounds.size * 0.5
+			zone = Rect2(bounds.position + corner * size, size)
+		var local_point := Vector2(randf_range(zone.position.x, zone.end.x), randf_range(zone.position.y, zone.end.y))
+		var destination := region.to_global(local_point)
+		if destination.distance_to(_player.global_position) < player_clearance or not contains_body_position(destination, collision):
+			continue
+		var nearest := INF
+		for point in points:
+			nearest = minf(nearest, point.distance_to(destination))
+		if nearest < enemy_spacing:
+			continue
+		query.transform = Transform2D(0.0, destination) * collision.transform
+		if not space.intersect_shape(query, 1).is_empty():
+			continue
+		if spawn_layout == SpawnLayout.RANDOM:
+			return destination
+		# Prefer the largest gap between enemies. Start near the room's edge.
+		var score := destination.distance_to(center) if points.is_empty() else nearest
+		if score > best_score:
+			best = destination
+			best_score = score
+		valid_samples += 1
+		if valid_samples >= 24:
+			break
+	return best
+
 
 func contains_body_position(destination: Vector2, collision: CollisionShape2D) -> bool:
 	# Keep the full body's bounding rectangle inside the section.

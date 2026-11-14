@@ -1,7 +1,5 @@
 [gd_scene format=3 uid="uid://boskggorwimm3"]
 
-[ext_resource type="Script" path="res://scripts/audio/player_state_audio.gd" id="40_state_audio"]
-
 [ext_resource type="Script" uid="uid://c8x6fslv15gol" path="res://scripts/Player.gd" id="1_0wfyh"]
 [ext_resource type="Texture2D" uid="uid://dd7wehh4u1ixd" path="res://assets/ALIEN_MAP.png" id="1_tbgi4"]
 [ext_resource type="Script" uid="uid://cw6dwya31t5a1" path="res://scripts/ControllerUDP.gd" id="2_sugp2"]
@@ -18,13 +16,14 @@
 [ext_resource type="PackedScene" uid="uid://bysvorts8qbn7" path="res://scenes/snot_bullet.tscn" id="11_snot"]
 [ext_resource type="Script" uid="uid://8lg5hjxowru5" path="res://scripts/FlowerSpawner.gd" id="12_eb6dy"]
 [ext_resource type="PackedScene" uid="uid://dh0ed54i35pqk" path="res://scenes/CosmosFlower.tscn" id="13_trceg"]
-[ext_resource type="Texture2D" uid="uid://xa0ohopm82mk" path="res://assets/ALIEN_MAP_UPPER_LAYER.png" id="15_jkv2x"]
+[ext_resource type="Texture2D" uid="uid://qmes7s7tip8k" path="res://assets/ALIEN_MAP_UPPER_LAYER.png" id="15_jkv2x"]
 [ext_resource type="Texture2D" uid="uid://bt3qmgogtlwpp" path="res://assets/key.png" id="17_muem4"]
 [ext_resource type="Texture2D" uid="uid://b4mgcfsyunl53" path="res://assets/ALIEN_DOOR_EXPLODE.png" id="18_dp3eg"]
 [ext_resource type="Script" uid="uid://bp8ashbt1vtv8" path="res://scripts/audio/ship_soundscape.gd" id="20_audio"]
 [ext_resource type="Script" uid="uid://rwd1j4k0kihu" path="res://scripts/KeyPickup.gd" id="30_key_pickup"]
 [ext_resource type="Script" uid="uid://dtkbyoo8v70r5" path="res://scripts/FinalDoor.gd" id="31_final_door"]
 [ext_resource type="PackedScene" path="res://scenes/HUD.tscn" id="40_health_hud"]
+[ext_resource type="Script" uid="uid://cwsiftw5afmgi" path="res://scripts/audio/player_state_audio.gd" id="40_state_audio"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5poiv"]
 atlas = ExtResource("18_dp3eg")
@@ -677,7 +676,7 @@ position = Vector2(-789, -575)
 collision_mask = 3
 script = ExtResource("1_0wfyh")
 
-[node name="StateAudio" type="Node" parent="CharacterBody2D"]
+[node name="StateAudio" type="Node" parent="CharacterBody2D" unique_id=1645719301]
 script = ExtResource("40_state_audio")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CharacterBody2D" unique_id=1160666951]
@@ -731,9 +730,8 @@ polygon = PackedVector2Array(-395, -700, 65, -700, 65, -440, -395, -440)
 collision_layer = 0
 script = ExtResource("9_sections")
 minimum_enemies = 4
-maximum_enemies = 6
-enemy_spacing = 320.0
 player_clearance = 200.0
+enemy_spacing = 320.0
 spawn_layout = 1
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/MessHall" unique_id=1861908371]
@@ -743,9 +741,8 @@ polygon = PackedVector2Array(-1080, 0, 140, 0, 140, 990, -1080, 990)
 collision_layer = 0
 script = ExtResource("9_sections")
 minimum_enemies = 4
-maximum_enemies = 4
-enemy_spacing = 280.0
 player_clearance = 200.0
+enemy_spacing = 280.0
 spawn_layout = 2
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/ObservationRoom" unique_id=1154565772]

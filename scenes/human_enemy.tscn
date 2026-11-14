@@ -140,7 +140,7 @@ animations = [{
 }],
 "loop": 1,
 "name": &"teleport",
-"speed": 5.0
+"speed": 12.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -186,9 +186,9 @@ script = ExtResource("1_enemy")
 position = Vector2(12.999992, -9.5)
 scale = Vector2(0.332, 0.322)
 sprite_frames = SubResource("SpriteFrames_astronaut")
-animation = &"walk"
+animation = &"teleport"
 autoplay = "idle"
-frame_progress = 0.5918009
+frame_progress = 0.8599638
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1101206304]
 position = Vector2(-6, -21)

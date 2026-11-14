@@ -8,7 +8,7 @@ func _on_play_button_pressed():
 	print("you pressed play wow")
 	click_sound.play()
 	await click_sound.finished
-	get_tree().change_scene_to_file("res://Scenes/cutscene.tscn")
+	get_tree().change_scene_to_file("res://scenes/cutscene.tscn")
 	
 
 func _on_quit_button_pressed():
