@@ -3,6 +3,8 @@ extends CharacterBody2D
 @export var max_health: int = 3
 var health: int = 3
 var is_dead: bool = false
+var has_final_key: bool = false
+signal final_key_collected
 signal health_changed(current_health: int, maximum_health: int)
 signal died
 
@@ -156,9 +158,21 @@ func receive_enemy_hit(source_position: Vector2, attacker: Node2D = null) -> boo
 		_die()
 	return true
 		
+func collect_final_key() -> bool:
+	if is_dead:
+		return false
+	has_final_key = true
+	final_key_collected.emit()
+	print("Key collected! Tilt near the final door to open it.")
+	return true
+
+
 func try_door_teleport() -> void:
 	if is_dead or is_teleporting:
 		return
+	for final_door in get_tree().get_nodes_in_group("final_doors"):
+		if final_door.try_open(self):
+			return
 	for door in get_tree().get_nodes_in_group("doors"):
 		if door.try_teleport(self):
 			return

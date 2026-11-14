@@ -1,7 +1,5 @@
 [gd_scene format=3 uid="uid://boskggorwimm3"]
 
-[ext_resource type="Script" path="res://scripts/audio/ship_soundscape.gd" id="20_audio"]
-
 [ext_resource type="Script" uid="uid://c8x6fslv15gol" path="res://scripts/Player.gd" id="1_0wfyh"]
 [ext_resource type="Texture2D" uid="uid://dd7wehh4u1ixd" path="res://assets/ALIEN_MAP.png" id="1_tbgi4"]
 [ext_resource type="Script" uid="uid://cw6dwya31t5a1" path="res://scripts/ControllerUDP.gd" id="2_sugp2"]
@@ -17,6 +15,39 @@
 [ext_resource type="Script" uid="uid://8lg5hjxowru5" path="res://scripts/FlowerSpawner.gd" id="12_eb6dy"]
 [ext_resource type="PackedScene" uid="uid://dh0ed54i35pqk" path="res://scenes/CosmosFlower.tscn" id="13_trceg"]
 [ext_resource type="Texture2D" uid="uid://xa0ohopm82mk" path="res://assets/ALIEN_MAP_UPPER_LAYER.png" id="15_jkv2x"]
+[ext_resource type="Texture2D" uid="uid://bt3qmgogtlwpp" path="res://assets/key.png" id="17_muem4"]
+[ext_resource type="Texture2D" uid="uid://b4mgcfsyunl53" path="res://assets/ALIEN_DOOR_EXPLODE.png" id="18_dp3eg"]
+[ext_resource type="Script" uid="uid://bp8ashbt1vtv8" path="res://scripts/audio/ship_soundscape.gd" id="20_audio"]
+[ext_resource type="Script" uid="uid://rwd1j4k0kihu" path="res://scripts/KeyPickup.gd" id="30_key_pickup"]
+[ext_resource type="Script" uid="uid://dtkbyoo8v70r5" path="res://scripts/FinalDoor.gd" id="31_final_door"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5poiv"]
+atlas = ExtResource("18_dp3eg")
+region = Rect2(0, 0, 106, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2cjbq"]
+atlas = ExtResource("18_dp3eg")
+region = Rect2(106, 0, 106, 128)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_mb648"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5poiv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_2cjbq")
+}],
+"loop": 0,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_h5o5l"]
+size = Vector2(256, 402.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_final_blocker"]
+size = Vector2(240, 300)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_67bfh"]
 size = Vector2(112, 2211)
@@ -311,10 +342,76 @@ size = Vector2(273, 289)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_lnus7"]
 size = Vector2(248.5, 275.5)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_kmb1v"]
+atlas = ExtResource("17_muem4")
+region = Rect2(0, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fuf3a"]
+atlas = ExtResource("17_muem4")
+region = Rect2(500, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pibwh"]
+atlas = ExtResource("17_muem4")
+region = Rect2(1000, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_c6pm6"]
+atlas = ExtResource("17_muem4")
+region = Rect2(1500, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5he1u"]
+atlas = ExtResource("17_muem4")
+region = Rect2(2000, 0, 500, 500)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_67bfh"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kmb1v")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fuf3a")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pibwh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_c6pm6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5he1u")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_o6kvn"]
+radius = 106.08459
+
 [node name="Main" type="Node2D" unique_id=472835953]
 
-[node name="ShipSoundscape" type="Node" parent="."]
+[node name="ShipSoundscape" type="Node" parent="." unique_id=1993758681]
 script = ExtResource("20_audio")
+
+[node name="ExplodeDoor" type="Area2D" parent="." unique_id=1650272879]
+z_index = 1
+script = ExtResource("31_final_door")
+
+[node name="ExplodeDoor" type="AnimatedSprite2D" parent="ExplodeDoor" unique_id=1113715123]
+position = Vector2(810.5, 202.99998)
+scale = Vector2(2.556604, 3.0781248)
+sprite_frames = SubResource("SpriteFrames_mb648")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExplodeDoor" unique_id=1544649580]
+position = Vector2(806, 199.25)
+shape = SubResource("RectangleShape2D_h5o5l")
+
+[node name="Blocker" type="StaticBody2D" parent="ExplodeDoor" unique_id=1317857106]
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExplodeDoor/Blocker" unique_id=845059512]
+position = Vector2(806, 199.25)
+shape = SubResource("RectangleShape2D_final_blocker")
 
 [node name="Map" type="Sprite2D" parent="." unique_id=1623396555]
 texture = ExtResource("1_tbgi4")
@@ -418,6 +515,7 @@ position = Vector2(-284, -667)
 shape = SubResource("RectangleShape2D_8wvqg")
 
 [node name="CharacterBody2D" type="CharacterBody2D" parent="." unique_id=1095932587 groups=["player"]]
+z_index = 2
 position = Vector2(-789, -575)
 collision_mask = 3
 script = ExtResource("1_0wfyh")
@@ -473,8 +571,6 @@ polygon = PackedVector2Array(-395, -700, 65, -700, 65, -440, -395, -440)
 [node name="MessHall" type="Area2D" parent="Enemies" unique_id=920052650]
 collision_layer = 0
 script = ExtResource("9_sections")
-minimum_enemies = 3
-maximum_enemies = 4
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/MessHall" unique_id=1861908371]
 polygon = PackedVector2Array(-1080, 0, 140, 0, 140, 990, -1080, 990)
@@ -540,4 +636,21 @@ position = Vector2(561, 692)
 position = Vector2(-447, 331)
 
 [node name="MapLayer" type="Sprite2D" parent="." unique_id=1828108245]
+z_index = 3
 texture = ExtResource("15_jkv2x")
+
+[node name="Key" type="Area2D" parent="." unique_id=186479898]
+z_index = 2
+script = ExtResource("30_key_pickup")
+
+[node name="Key" type="AnimatedSprite2D" parent="Key" unique_id=1252957095]
+position = Vector2(-86, -674)
+scale = Vector2(0.18000007, 0.18899979)
+sprite_frames = SubResource("SpriteFrames_67bfh")
+autoplay = "default"
+frame_progress = 0.2744229
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Key" unique_id=1836973474]
+position = Vector2(-93, -669)
+scale = Vector2(0.18000007, 0.18899979)
+shape = SubResource("CircleShape2D_o6kvn")
