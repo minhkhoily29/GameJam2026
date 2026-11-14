@@ -31,6 +31,7 @@ var _teleport_retry_timer: float = 0.0
 var _charge_direction := Vector2.ZERO
 var _sprite: AnimatedSprite2D
 var _collision: CollisionShape2D
+var _slash_playing: bool = false
 
 
 func _ready() -> void:
@@ -40,6 +41,12 @@ func _ready() -> void:
 		set_physics_process(false)
 		return
 	_sprite = enemy.get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
+	if _sprite != null and _sprite.sprite_frames != null:
+		_sprite.sprite_frames = _sprite.sprite_frames.duplicate() as SpriteFrames
+		for animation_name in [&"slash", &"teleport"]:
+			if _sprite.sprite_frames.has_animation(animation_name):
+				_sprite.sprite_frames.set_animation_loop(animation_name, false)
+		_sprite.animation_finished.connect(_on_animation_finished)
 	_collision = enemy.get_node_or_null("CollisionShape2D") as CollisionShape2D
 	_charge_timer = maxf(charge_cooldown, 0.0)
 
@@ -67,6 +74,7 @@ func _physics_process(delta: float) -> void:
 				_charge_direction = offset.normalized()
 				state = State.CHARGING
 				_state_time = maxf(charge_duration, 0.0)
+				_play_slash()
 				AudioManager.play_sfx(&"knife_slash", enemy.global_position)
 			else:
 				# Retry later if the room is too crowded; keep chasing meanwhile.
@@ -85,6 +93,7 @@ func _physics_process(delta: float) -> void:
 			if _state_time <= 0.0:
 				state = State.CHARGING
 				_state_time = maxf(charge_duration, 0.0)
+				_play_slash()
 				AudioManager.play_sfx(&"knife_slash", enemy.global_position)
 		State.CHARGING:
 			if _state_time <= 0.0:
@@ -162,6 +171,7 @@ func _teleport_to_clear_spot(minimum: float, maximum: float, attempts: int) -> b
 		# Stay on the player's side of walls and closed doors.
 		if not _has_clear_path(player.global_position, destination):
 			continue
+		_play_teleport_effect()
 		enemy.global_position = destination
 		enemy.reset_physics_interpolation()
 		AudioManager.play_sfx(&"enemy_teleport", destination)
@@ -182,6 +192,8 @@ func _update_sprite() -> void:
 		return
 	if absf(enemy.velocity.x) > 0.01:
 		_sprite.flip_h = enemy.velocity.x < 0.0
+	if _slash_playing:
+		return
 	if enemy.velocity.is_zero_approx():
 		if _sprite.sprite_frames != null and _sprite.sprite_frames.has_animation("idle"):
 			_sprite.play("idle")
@@ -189,3 +201,40 @@ func _update_sprite() -> void:
 			_sprite.pause()
 	elif _sprite.sprite_frames != null and _sprite.sprite_frames.has_animation("walk"):
 		_sprite.play("walk")
+
+func _play_slash() -> void:
+	if _sprite == null or _sprite.sprite_frames == null:
+		return
+	if not _sprite.sprite_frames.has_animation("slash"):
+		return
+	_slash_playing = true
+	if absf(_charge_direction.x) > 0.01:
+		_sprite.flip_h = _charge_direction.x < 0.0
+	_sprite.stop()
+	_sprite.play("slash", 1.0, false)
+
+
+func _on_animation_finished() -> void:
+	if _sprite.animation == &"slash":
+		_slash_playing = false
+		_update_sprite()
+
+
+func _play_teleport_effect() -> void:
+	if _sprite == null or _sprite.sprite_frames == null:
+		return
+	if not _sprite.sprite_frames.has_animation("teleport"):
+		return
+	# Animate the departure independently so the enemy can charge immediately.
+	var effect := AnimatedSprite2D.new()
+	effect.name = "TeleportEffect"
+	effect.sprite_frames = _sprite.sprite_frames
+	effect.centered = _sprite.centered
+	effect.offset = _sprite.offset
+	effect.flip_h = _sprite.flip_h
+	effect.flip_v = _sprite.flip_v
+	effect.z_index = enemy.z_index + _sprite.z_index
+	enemy.get_parent().add_child(effect)
+	effect.global_transform = _sprite.global_transform
+	effect.animation_finished.connect(effect.queue_free, CONNECT_ONE_SHOT)
+	effect.play("teleport", 1.0, false)

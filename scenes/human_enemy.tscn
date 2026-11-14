@@ -2,11 +2,61 @@
 
 [ext_resource type="Script" uid="uid://dssj6l7uuxcjk" path="res://scripts/combat/enemy.gd" id="1_enemy"]
 [ext_resource type="Script" uid="uid://b65iymncjmim" path="res://scripts/combat/enemy_movement.gd" id="2_movement"]
+[ext_resource type="Texture2D" uid="uid://drac8m3whq0k" path="res://assets/astronautEnemyATTACK.png" id="3_5olu5"]
 [ext_resource type="Texture2D" uid="uid://n7a64c2djd6f" path="res://assets/astronaut_enemy.png" id="3_astronaut"]
+[ext_resource type="Texture2D" uid="uid://wg8uxidxeiqu" path="res://assets/astronautEnemyteleport.png" id="4_ea8u7"]
 
 [sub_resource type="AtlasTexture" id="Atlas_walk_0"]
 atlas = ExtResource("3_astronaut")
 region = Rect2(0, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1be6w"]
+atlas = ExtResource("3_5olu5")
+region = Rect2(0, 0, 700, 700)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ra8j1"]
+atlas = ExtResource("3_5olu5")
+region = Rect2(700, 0, 700, 700)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_c6uvu"]
+atlas = ExtResource("3_5olu5")
+region = Rect2(1400, 0, 700, 700)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wht8q"]
+atlas = ExtResource("3_5olu5")
+region = Rect2(2100, 0, 700, 700)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_81str"]
+atlas = ExtResource("4_ea8u7")
+region = Rect2(0, 0, 700, 700)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bqppx"]
+atlas = ExtResource("4_ea8u7")
+region = Rect2(700, 0, 700, 700)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8ss7j"]
+atlas = ExtResource("4_ea8u7")
+region = Rect2(1400, 0, 700, 700)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_76fr2"]
+atlas = ExtResource("4_ea8u7")
+region = Rect2(2100, 0, 700, 700)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_03qbp"]
+atlas = ExtResource("4_ea8u7")
+region = Rect2(2800, 0, 700, 700)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jhb8u"]
+atlas = ExtResource("4_ea8u7")
+region = Rect2(3500, 0, 700, 700)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n7kws"]
+atlas = ExtResource("4_ea8u7")
+region = Rect2(4200, 0, 700, 700)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_go7gr"]
+atlas = ExtResource("4_ea8u7")
+region = Rect2(4900, 0, 700, 700)
 
 [sub_resource type="AtlasTexture" id="Atlas_walk_1"]
 atlas = ExtResource("3_astronaut")
@@ -45,6 +95,52 @@ animations = [{
 "loop": 1,
 "name": &"idle",
 "speed": 1.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1be6w")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ra8j1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_c6uvu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wht8q")
+}],
+"loop": 1,
+"name": &"slash",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_81str")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bqppx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8ss7j")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_76fr2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_03qbp")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jhb8u")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n7kws")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_go7gr")
+}],
+"loop": 1,
+"name": &"teleport",
+"speed": 5.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -90,8 +186,9 @@ script = ExtResource("1_enemy")
 position = Vector2(12.999992, -9.5)
 scale = Vector2(0.332, 0.322)
 sprite_frames = SubResource("SpriteFrames_astronaut")
-animation = &"idle"
+animation = &"walk"
 autoplay = "idle"
+frame_progress = 0.5918009
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1101206304]
 position = Vector2(-6, -21)
