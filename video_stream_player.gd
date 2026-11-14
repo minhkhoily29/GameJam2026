@@ -1,15 +1,19 @@
 extends VideoStreamPlayer
 
-
-# Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-	pass # Replace with function body.
+var _leaving: bool = false
 
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and not event.is_echo():
+		get_viewport().set_input_as_handled()
+		_on_finished()
 
 
 func _on_finished() -> void:
-	get_tree().change_scene_to_file("res://scenes/main.tscn")
+	if _leaving:
+		return
+	_leaving = true
+	var error := get_tree().change_scene_to_file("res://scenes/main.tscn")
+	if error != OK:
+		_leaving = false
+		push_error("Could not start gameplay: " + error_string(error))

@@ -18,4 +18,24 @@ autoplay = true
 expand = true
 script = ExtResource("2_0sipp")
 
+[node name="Overlay" type="CanvasLayer" parent="."]
+
+[node name="SkipButton" type="Button" parent="Overlay"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -160.0
+offset_top = -66.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 18
+text = "Skip intro"
+
 [connection signal="finished" from="VideoStreamPlayer" to="VideoStreamPlayer" method="_on_finished"]
+
+[connection signal="pressed" from="Overlay/SkipButton" to="VideoStreamPlayer" method="_on_finished"]
+
