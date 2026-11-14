@@ -23,6 +23,7 @@ files can be traced and replaced. Pack license files are included under kenney/.
 | kenney/power_up_loop.wav | engineCircular_002.ogg, https://kenney.nl/assets/sci-fi-sounds | Kenney, CC0 |
 | kenney/player_hit.ogg | impactPunch_medium_000.ogg, https://kenney.nl/assets/impact-sounds | Kenney, CC0 |
 | kenney/enemy_death.ogg | impactSoft_heavy_000.ogg, same Impact Sounds pack | Kenney, CC0 |
+| kenney/enemy_defeat.wav | Layered impactSoft_heavy_000.ogg and impactMetal_heavy_002.ogg, https://kenney.nl/assets/impact-sounds | Kenney, CC0 |
 
 Wet impacts were converted from FLAC to 16-bit PCM WAV and peak-normalized to
 0.8. Snot impact onset was shortened by 59 ms. The active knife WAV removes
@@ -56,7 +57,11 @@ recorded in this checkout, so no new license claim is made for those files:
 Knife slash plays when an astronaut starts charging. Accepted nonfatal player
 hits have a separate impact; lethal hits use the slime death cue. Each snot bullet
 triggers one shot sound and at most one wet enemy impact. Wall hits are silent.
-Enemy death adds a short body impact to its final snot hit.
+Enemy death adds an airy sci-fi vanish cue to its final snot hit, once per kill
+at -2 dB on SFX without distance attenuation. The active enemy_vanish.wav is an
+original 0.65-second synthesized descending sweep with fading noise particles,
+made for this project and peak-normalized to 0.80. The earlier enemy_defeat.wav
+body-and-armour mix and original enemy_death.ogg are retained as unused assets.
 
 Escape audio hooks are in scripts/combat/escape_condition.gd. Collecting the key
 plays one key jingle; an accepted final-door explosion plays the bass cue once.

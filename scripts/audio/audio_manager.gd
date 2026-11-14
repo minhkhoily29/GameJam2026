@@ -8,7 +8,7 @@ const SOUNDS := {
 	&"snot_hit": [preload("res://sound affects/opengameart/snot_hit.wav"), -13.0],
 	&"knife_slash": [preload("res://sound affects/kenney/knife_slash.wav"), -10.0],
 	&"player_hit": [preload("res://sound affects/kenney/player_hit.ogg"), -10.0],
-	&"enemy_death": [preload("res://sound affects/kenney/enemy_death.ogg"), -10.0],
+	&"enemy_death": [preload("res://sound affects/enemy_vanish.wav"), -2.0],
 	&"player_death": [preload("res://sound affects/slime for door.ogg"), -5.0],
 	&"door_slide": [preload("res://sound affects/slime for door.ogg"), -9.0],
 	&"enemy_teleport": [preload("res://sound affects/opengameart/enemy_teleport_02.ogg"), -7.0],
