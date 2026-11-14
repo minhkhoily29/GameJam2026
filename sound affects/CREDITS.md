@@ -75,7 +75,11 @@ pitch variation uses a separate RNG and does not affect seeded spawning. Headles
 runs skip opening audio voices.
 
 Player state loops are in scripts/audio/player_state_audio.gd. At 1 HP a heartbeat
-loops at -4 dB on SFX until healing or death. The existing brief damage flash is unchanged.
+loops at +4 dB on SFX until healing or death. The existing brief damage flash is unchanged.
+Music is reduced by 8 dB during low health or a cosmos power-up. Overlapping
+states share one reduction; normal music returns when both end, on death, or on scene exit.
+The ship engine ambience is silent while the low-health heartbeat is active,
+and resumes when healing stops the heartbeat. Death and scene exit clear the pause.
 A fast synthesized arcade power-up loop (-11 dB on SFX, with the SFX bus at -2 dB) runs
 only during the five-second cosmos buff, sitting just above the Music bus at -15 dB;
 another flower refreshes the timer without restarting or stacking the loop.
