@@ -5,13 +5,15 @@ user-provided `ALIEN_VANISHING_POINT_ALT2.wav` in Downloads. The original downlo
 is unchanged. No creator or license was supplied for this track; this entry does
 not claim it is CC0. It loops on the Music bus at -28 dB while a map is active.
 
-New downloads are CC0 (public domain). Original pack names are recorded so the
+New downloads are CC0 (public domain), except the explosion explicitly credited
+under CC BY 3.0 below. Original pack names are recorded so the
 files can be traced and replaced. Pack license files are included under kenney/.
 
 | Local file | Original source | Creator / license |
 | --- | --- | --- |
 | opengameart/snot_spit.wav | Actions/Spitting.wav in https://opengameart.org/content/action-sounds | pauliuw, CC0 |
 | opengameart/snot_hit.wav | impactsplat01.mp3.flac in https://opengameart.org/content/8-wet-squish-slurp-impacts | Independent.nu, submitted by qubodup, CC0 |
+| opengameart/final_door_grenade.wav | explodemini.wav, https://opengameart.org/content/2-high-quality-explosions | Michel Baradari (apollo-music.de), CC BY 3.0, https://creativecommons.org/licenses/by/3.0/ |
 | kenney/knife_slash.wav | knifeSlice.ogg, https://kenney.nl/assets/rpg-audio | Kenney, CC0 |
 | kenney/key_pickup.ogg | handleCoins2.ogg, https://kenney.nl/assets/rpg-audio | Kenney, CC0 |
 | kenney/door_locked.ogg | metalLatch.ogg, https://kenney.nl/assets/rpg-audio | Kenney, CC0 |
@@ -24,6 +26,12 @@ Wet impacts were converted from FLAC to 16-bit PCM WAV and peak-normalized to
 are needed by the running game.
 CC0: https://creativecommons.org/publicdomain/zero/1.0/
 
+Final-door grenade-style explosion: "explodemini.wav" by Michel Baradari,
+apollo-music.de, from "2 High Quality Explosions" on OpenGameArt.org, licensed
+under CC BY 3.0. Adapted by trimming leading silence and peak-normalizing to 0.90.
+The source credit/license notice is in opengameart/LICENSE-EXPLOSIONS.txt.
+Preserve this attribution in the game's distributed credits.
+
 Existing project audio is reused unchanged. Its original provenance was not
 recorded in this checkout, so no new license claim is made for those files:
 
@@ -34,8 +42,8 @@ recorded in this checkout, so no new license claim is made for those files:
 - flower_pickup.wav: derived from collecting flower.mp3 with 1.416 seconds of
   leading silence and 1.075 seconds of trailing silence removed; plays immediately on successful collection. The
   original MP3 is retained unchanged as a backup.
-- lowFrequency_explosion_000.ogg: final-door explosion at -3 dB on SFX, with
-  pitch 1.0 for a loud low-frequency effect.
+- lowFrequency_explosion_000.ogg: original retained asset, replaced for the final
+  door by final_door_grenade.wav at -1 dB on SFX with normal pitch.
 - gun.ogg: intentionally unused; the shrimp spits rather than fires a gun.
 
 Knife slash plays when an astronaut starts charging. Accepted nonfatal player

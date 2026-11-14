@@ -14,7 +14,7 @@ const SOUNDS := {
 	&"footstep": [preload("res://sound affects/foot steps.ogg"), -19.0],
 	&"flower_pickup": [preload("res://sound affects/flower_pickup.wav"), -12.0],
 	&"key_pickup": [preload("res://sound affects/kenney/key_pickup.ogg"), -12.0],
-	&"final_door_explosion": [preload("res://sound affects/lowFrequency_explosion_000.ogg"), -3.0],
+	&"final_door_explosion": [preload("res://sound affects/opengameart/final_door_grenade.wav"), -1.0],
 	&"door_locked": [preload("res://sound affects/kenney/door_locked.ogg"), -12.0],
 }
 var _rng := RandomNumberGenerator.new()
