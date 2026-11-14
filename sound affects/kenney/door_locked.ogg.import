@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://bosuh43bcr617"
+path="res://.godot/imported/door_locked.ogg-d19d2053ff8db7fcc8ea6a14ca3286d4.oggvorbisstr"
+
+[deps]
+
+source_file="res://sound affects/kenney/door_locked.ogg"
+dest_files=["res://.godot/imported/door_locked.ogg-d19d2053ff8db7fcc8ea6a14ca3286d4.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

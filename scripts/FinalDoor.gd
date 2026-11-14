@@ -30,6 +30,7 @@ func try_open(player: CharacterBody2D) -> bool:
 	if player.is_dead or player.is_teleporting:
 		return false
 	if not player.has_final_key:
+		AudioManager.play_locked_door()
 		print("Find the key before opening this door.")
 		return true
 	if sprite.sprite_frames == null or not sprite.sprite_frames.has_animation(explosion_animation):
