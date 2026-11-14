@@ -98,20 +98,25 @@ recording needs +8 dB to be comparable to other feedback. Current voice gains:
 | Flower / key pickup | -6 / +8 dB |
 | Locked door | -12 dB |
 | Player death / final explosion | -5 / -1 dB |
+| Low-health warning loop | -16 dB |
 
 Footsteps, shots, and door slides use a Routine bus feeding SFX. During important
 cues this bus drops by 5 dB, including sounds already playing. Music briefly
 drops by 4 dB; the existing 8 dB low-health/power-up reduction takes precedence.
 Overlapping cues extend one hold instead of stacking gain reductions or dropping
 events. Levels recover after the cue hold, and stopping SFX clears the hold.
-Heartbeat, power-up, and enemy vanish playback gains remain at their approved levels.
+Power-up and enemy vanish playback gains remain at their approved levels.
 
-Player state loops are in scripts/audio/player_state_audio.gd. At 1 HP a heartbeat
-loops at +4 dB on SFX until healing or death. The existing brief damage flash is unchanged.
+Player state loops are in scripts/audio/player_state_audio.gd. At 1 HP an electronic
+two-tone warning loops at -16 dB on SFX until healing or death. The active
+low_health_warning.wav is an original synthesized 1.2-second loop made for this
+project, with two clear alert notes and a gap between repetitions. It replaces
+the heartbeat with a more prominent alarm; the heartbeat asset is retained unused.
+The existing brief damage flash is unchanged.
 Music is reduced by 8 dB during low health or a cosmos power-up. Overlapping
 states share one reduction; normal music returns when both end, on death, or on scene exit.
-The ship engine ambience is silent while the low-health heartbeat is active,
-and resumes when healing stops the heartbeat. Death and scene exit clear the pause.
+The ship engine ambience is silent while the low-health warning is active,
+and resumes when healing stops the warning. Death and scene exit clear the pause.
 A fast synthesized arcade power-up loop (-11 dB on SFX, with the SFX bus at -2 dB) runs
 only during the five-second cosmos buff, above the Music bus at -18 dB;
 another flower refreshes the timer without restarting or stacking the loop.
