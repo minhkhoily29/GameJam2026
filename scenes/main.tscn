@@ -571,6 +571,8 @@ polygon = PackedVector2Array(-395, -700, 65, -700, 65, -440, -395, -440)
 [node name="MessHall" type="Area2D" parent="Enemies" unique_id=920052650]
 collision_layer = 0
 script = ExtResource("9_sections")
+minimum_enemies = 4
+maximum_enemies = 6
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/MessHall" unique_id=1861908371]
 polygon = PackedVector2Array(-1080, 0, 140, 0, 140, 990, -1080, 990)
@@ -578,8 +580,8 @@ polygon = PackedVector2Array(-1080, 0, 140, 0, 140, 990, -1080, 990)
 [node name="ObservationRoom" type="Area2D" parent="Enemies" unique_id=2116962393]
 collision_layer = 0
 script = ExtResource("9_sections")
-minimum_enemies = 2
-maximum_enemies = 2
+minimum_enemies = 4
+maximum_enemies = 4
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/ObservationRoom" unique_id=1154565772]
 polygon = PackedVector2Array(280, -700, 990, -700, 990, 0, 280, 0)
