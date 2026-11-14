@@ -21,10 +21,15 @@ signal hit_by_enemy(source_position: Vector2)
 
 var facing_direction := Vector2.RIGHT
 var move_input := Vector2.ZERO
+var _controller_move_input := Vector2.ZERO
+var _keyboard_was_active: bool = false
+# Temporary local preview only. Normal launches accept the ESP controller.
+var _desktop_preview_enabled: bool = OS.get_cmdline_user_args().has("--desktop-preview")
 var _knockback_velocity := Vector2.ZERO
 var _knockback_time: float = 0.0
 var _enemy_hit_timer: float = 0.0
 var _hit_flash_time: float = 0.0
+var _footstep_time: float = 0.0
 var _cosmos_time_left: float = 0.0
 var _pre_cosmos_speed: float = 0.0
 var _pre_cosmos_damage: float = 1.0
@@ -51,6 +56,7 @@ func _die() -> void:
 	if is_dead:
 		return
 	is_dead = true
+	AudioManager.play_sfx(&"player_death")
 	velocity = Vector2.ZERO
 	move_input = Vector2.ZERO
 	_knockback_velocity = Vector2.ZERO
@@ -66,7 +72,11 @@ func _die() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not _desktop_preview_enabled:
+		return
 	if is_dead:
+		if event is InputEventKey and event.keycode == KEY_R and event.pressed and not event.echo:
+			get_tree().reload_current_scene()
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		var aim := global_position.direction_to(get_global_mouse_position())
@@ -75,6 +85,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		shoot()
 	elif event is InputEventKey and event.keycode == KEY_SPACE and event.pressed and not event.echo:
 		shoot()
+	elif event is InputEventKey and event.keycode == KEY_E and event.pressed and not event.echo:
+		try_door_teleport()
 
 
 # Called by ControllerUDP when a controller packet arrives.
@@ -92,6 +104,7 @@ func update_aim(raw_x: int, raw_y: int) -> void:
 	var strength := minf(stick.length(), 1.0)
 
 	if strength <= deadzone:
+		_controller_move_input = Vector2.ZERO
 		move_input = Vector2.ZERO
 		return
 
@@ -100,9 +113,26 @@ func update_aim(raw_x: int, raw_y: int) -> void:
 	# Smoothly scale movement outside the deadzone.
 	var adjusted_strength := (strength - deadzone) / (1.0 - deadzone)
 	move_input = facing_direction * adjusted_strength
+	_controller_move_input = move_input
+
+
+func _update_keyboard_movement() -> void:
+	if not _desktop_preview_enabled:
+		return
+	var keyboard := Vector2(
+		float(Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT)) - float(Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT)),
+		float(Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN)) - float(Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP))
+	).normalized()
+	if not keyboard.is_zero_approx():
+		move_input = keyboard
+		facing_direction = keyboard
+	elif _keyboard_was_active:
+		move_input = _controller_move_input
+	_keyboard_was_active = not keyboard.is_zero_approx()
 
 
 func _physics_process(delta: float) -> void:
+	_footstep_time = maxf(_footstep_time - delta, 0.0)
 	_update_cosmos_buff(delta)
 	_enemy_hit_timer = maxf(_enemy_hit_timer - delta, 0.0)
 	_hit_flash_time = maxf(_hit_flash_time - delta, 0.0)
@@ -110,6 +140,7 @@ func _physics_process(delta: float) -> void:
 	if is_dead or is_teleporting:
 		velocity = Vector2.ZERO
 		return
+	_update_keyboard_movement()
 	if _knockback_time > 0.0:
 		velocity = _knockback_velocity
 		_knockback_time = maxf(_knockback_time - delta, 0.0)
@@ -131,8 +162,12 @@ func _physics_process(delta: float) -> void:
 
 	if actual_velocity.length() > 1.0:
 		sprite.play(walk_animation)
+		if _knockback_time <= 0.0 and _footstep_time <= 0.0:
+			AudioManager.play_sfx(&"footstep")
+			_footstep_time = clampf(85.0 / actual_velocity.length(), 0.23, 0.5)
 	else:
 		sprite.play("idle")
+		_footstep_time = 0.0
 
 
 func receive_enemy_hit(source_position: Vector2, attacker: Node2D = null) -> bool:
@@ -150,6 +185,8 @@ func receive_enemy_hit(source_position: Vector2, attacker: Node2D = null) -> boo
 	if _hit_flash_time > 0.0:
 		sprite.self_modulate = Color(1.0, 0.25, 0.25)
 	health = maxi(health - 1, 0)
+	if health > 0:
+		AudioManager.play_sfx(&"player_hit")
 	health_changed.emit(health, max_health)
 	print("Player health: ", health, "/", max_health)
 	hit_by_enemy.emit(source_position)
@@ -181,6 +218,7 @@ func teleport_to(destination: Vector2) -> void:
 		return
 
 	is_teleporting = true
+	AudioManager.play_sfx(&"door_slide")
 	velocity = Vector2.ZERO
 	_knockback_velocity = Vector2.ZERO
 	_knockback_time = 0.0
@@ -191,6 +229,7 @@ func teleport_to(destination: Vector2) -> void:
 	await sprite.animation_finished
 
 	global_position = destination
+	AudioManager.play_sfx(&"door_slide")
 	$Camera2D.reset_smoothing()
 
 	# Play backward from the last frame.

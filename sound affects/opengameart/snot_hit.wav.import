@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://ckda2kwu5625a"
+path="res://.godot/imported/snot_hit.wav-792e922dc5e523f661c174596db8eea7.sample"
+
+[deps]
+
+source_file="res://sound affects/opengameart/snot_hit.wav"
+dest_files=["res://.godot/imported/snot_hit.wav-792e922dc5e523f661c174596db8eea7.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

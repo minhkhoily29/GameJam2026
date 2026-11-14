@@ -33,4 +33,5 @@ func fire(direction: Vector2) -> bool:
 	container.add_child(projectile)
 	projectile.global_position = spawn_point.global_position
 	_cooldown = 1.0 / max(shots_per_second, 0.01)
+	AudioManager.play_sfx(&"snot_shoot")
 	return true

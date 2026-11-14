@@ -17,6 +17,7 @@ func _on_body_entered(body: Node2D) -> void:
 		push_warning("Player is missing apply_cosmos_buff()")
 		return
 	collected = true
+	AudioManager.play_sfx(&"flower_pickup")
 	body.apply_cosmos_buff(
 		damage_up,
 		speed_up
