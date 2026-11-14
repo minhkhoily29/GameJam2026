@@ -1,9 +1,7 @@
 # Sound sources and game events
 
-Main theme: `music/alien_vanishing_point.wav`, copied without conversion from the
-user-provided `ALIEN_VANISHING_POINT_ALT2.wav` in Downloads. The original download
-is unchanged. No creator or license was supplied for this track; this entry does
-not claim it is CC0. It loops on the Music bus at -28 dB while a map is active.
+Gameplay theme: `music/Intense background battle music.wav`, looped on the Music
+bus while a map is active.
 
 New downloads are CC0 (public domain), except the explosion explicitly credited
 under CC BY 3.0 below. Original pack names are recorded so the
@@ -17,19 +15,18 @@ files can be traced and replaced. Pack license files are included under kenney/.
 | kenney/knife_slash.wav | knifeSlice.ogg, https://kenney.nl/assets/rpg-audio | Kenney, CC0 |
 | kenney/key_pickup.ogg | handleCoins2.ogg, https://kenney.nl/assets/rpg-audio | Kenney, CC0 |
 | kenney/door_locked.ogg | metalLatch.ogg, https://kenney.nl/assets/rpg-audio | Kenney, CC0 |
-| kenney/enemy_teleport.ogg | forceField_000.ogg, https://kenney.nl/assets/sci-fi-sounds | Kenney, CC0 |
-| opengameart/enemy_teleport_02.ogg | teleport_02.ogg, https://opengameart.org/content/50-cc0-sci-fi-sfx | rubberduck, CC0 |
-| opengameart/enemy_teleport_02_immediate.wav | Trimmed from the retained rubberduck teleport_02.ogg above | rubberduck, CC0 |
-| opengameart/low_health_heartbeat.wav | heartbeat_fast_0.wav, https://opengameart.org/content/heartbeat-sounds | bart, CC0 |
-| kenney/power_up_loop.wav | engineCircular_002.ogg, https://kenney.nl/assets/sci-fi-sounds | Kenney, CC0 |
+| opengameart/enemy_teleport_02_immediate.wav | Trimmed from teleport_02.ogg, https://opengameart.org/content/50-cc0-sci-fi-sfx | rubberduck, CC0 |
 | kenney/player_hit.ogg | impactPunch_medium_000.ogg, https://kenney.nl/assets/impact-sounds | Kenney, CC0 |
-| kenney/enemy_death.ogg | impactSoft_heavy_000.ogg, same Impact Sounds pack | Kenney, CC0 |
-| kenney/enemy_defeat.wav | Layered impactSoft_heavy_000.ogg and impactMetal_heavy_002.ogg, https://kenney.nl/assets/impact-sounds | Kenney, CC0 |
+| ambience/space_echo.ogg | Space Echo, https://opengameart.org/content/space-echo | Centurion_of_war, CC0 |
+| extraction_countdown.mp3 | Blasting Off Spaceship Flyby 04, https://sfxmint.com/sounds/spaceship-flyby-04 | SFXMint, CC0 |
+| extraction_victory.wav | Original synthesized five-second victory fanfare created for this project | Original project audio |
 
 Wet impacts were converted from FLAC to 16-bit PCM WAV and peak-normalized to
 0.8. Snot impact onset was shortened by 59 ms. The active knife WAV removes
-76 ms of lead-in from the retained source OGG. No external links or downloads
-are needed by the running game.
+76 ms of lead-in from its source. Space Echo loops on the ending scene's Ambience
+bus. The slowed spaceship blast-off cue fills the five-second extraction hold.
+The synthesized victory fanfare runs on the Music bus under the blast-off cue
+through extraction and stops if the hold is interrupted.
 CC0: https://creativecommons.org/publicdomain/zero/1.0/
 
 Final-door grenade-style explosion: "explodemini.wav" by Michel Baradari,
@@ -44,20 +41,17 @@ recorded in this checkout, so no new license claim is made for those files:
 - slime for door.ogg: player death and departure/arrival through doors.
 - opengameart/enemy_teleport_02_immediate.wav: rubberduck teleport_02 on every successful
   enemy teleport, including approach teleports without a hit. Uses -3 dB on SFX,
-  fixed normal pitch and no distance falloff. The Kenney forcefield is retained
-  as an unused asset; its license is in LICENSE-SCIFI.txt.
+  fixed normal pitch and no distance falloff. The source recording was removed
+  after preparing the active clip.
   The active WAV skips 0.8 seconds of quiet buildup, keeps the warp through 1.5
   seconds of the original, and applies short boundary fades. This lines the audible
-  cue up with the jump instead of a later attack. The original OGG is retained.
+  cue up with the jump instead of a later attack.
   Background reduction holds for 0.65 seconds across the audible warp.
 - foot steps.ogg: only while the player actually walks, not idle or knocked back.
 - background noise.ogg: looping ship ambience, stopped when the map closes.
-- flower_pickup.wav: derived from collecting flower.mp3 with 1.416 seconds of
-  leading silence and 1.075 seconds of trailing silence removed; plays immediately on successful collection. The
-  original MP3 is retained unchanged as a backup.
-- lowFrequency_explosion_000.ogg: original retained asset, replaced for the final
-  door by final_door_grenade.wav at -1 dB on SFX with normal pitch.
-- gun.ogg: intentionally unused; the shrimp spits rather than fires a gun.
+- flower_pickup.wav: derived from its source recording with 1.416 seconds of
+  leading silence and 1.075 seconds of trailing silence removed; plays immediately
+  on successful collection.
 
 Knife slash plays when an astronaut starts charging. Accepted nonfatal player
 hits have a separate impact; lethal hits use the slime death cue. Each snot bullet
@@ -65,8 +59,7 @@ triggers one shot sound and at most one wet enemy impact. Wall hits are silent.
 Enemy death adds an airy sci-fi vanish cue to its final snot hit, once per kill
 at -2 dB on SFX without distance attenuation. The active enemy_vanish.wav is an
 original 0.65-second synthesized descending sweep with fading noise particles,
-made for this project and peak-normalized to 0.80. The earlier enemy_defeat.wav
-body-and-armour mix and original enemy_death.ogg are retained as unused assets.
+made for this project and peak-normalized to 0.80.
 
 Escape audio hooks are in scripts/combat/escape_condition.gd. Collecting the key
 plays one key jingle; an accepted final-door explosion plays the bass cue once.
@@ -98,6 +91,7 @@ recording needs +8 dB to be comparable to other feedback. Current voice gains:
 | Flower / key pickup | -6 / +8 dB |
 | Locked door | -12 dB |
 | Player death / final explosion | -5 / -1 dB |
+| Extraction countdown / victory fanfare | +2 dB / +14 dB on Music bus (-18 dB bus level) |
 | Low-health warning loop | -16 dB |
 
 Footsteps, shots, and door slides use a Routine bus feeding SFX. During important
@@ -111,7 +105,7 @@ Player state loops are in scripts/audio/player_state_audio.gd. At 1 HP an electr
 two-tone warning loops at -16 dB on SFX until healing or death. The active
 low_health_warning.wav is an original synthesized 1.2-second loop made for this
 project, with two clear alert notes and a gap between repetitions. It replaces
-the heartbeat with a more prominent alarm; the heartbeat asset is retained unused.
+the earlier heartbeat cue with a more prominent alarm.
 The existing brief damage flash is unchanged.
 Music is reduced by 8 dB during low health or a cosmos power-up. Overlapping
 states share one reduction; normal music returns when both end, on death, or on scene exit.
@@ -123,5 +117,4 @@ another flower refreshes the timer without restarting or stacking the loop.
 Expiry, death, and scene exit stop it. The active power_up_hyper.wav is an original
 four-second synthesized loop made for this project, with eight bouncy arpeggio
 notes per second and alternating stereo motion. Its RMS level matches the earlier
-soft pulse, and the playback gain is unchanged. The earlier power_up_pulse.wav
-and Kenney engine-derived power_up_loop.wav are retained as unused assets.
+soft pulse, and the playback gain is unchanged.
