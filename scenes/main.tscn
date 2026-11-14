@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://boskggorwimm3"]
 
+[ext_resource type="Script" path="res://scripts/audio/ship_soundscape.gd" id="20_audio"]
+
 [ext_resource type="Script" uid="uid://c8x6fslv15gol" path="res://scripts/Player.gd" id="1_0wfyh"]
 [ext_resource type="Texture2D" uid="uid://dd7wehh4u1ixd" path="res://assets/ALIEN_MAP.png" id="1_tbgi4"]
 [ext_resource type="Script" uid="uid://cw6dwya31t5a1" path="res://scripts/ControllerUDP.gd" id="2_sugp2"]
@@ -14,7 +16,7 @@
 [ext_resource type="PackedScene" path="res://scenes/snot_bullet.tscn" id="11_snot"]
 [ext_resource type="Script" uid="uid://8lg5hjxowru5" path="res://scripts/FlowerSpawner.gd" id="12_eb6dy"]
 [ext_resource type="PackedScene" uid="uid://dh0ed54i35pqk" path="res://scenes/CosmosFlower.tscn" id="13_trceg"]
-[ext_resource type="Texture2D" uid="uid://dv01aktqnmksr" path="res://assets/ALIEN_MAP_UPPER_LAYER.png" id="15_jkv2x"]
+[ext_resource type="Texture2D" uid="uid://xa0ohopm82mk" path="res://assets/ALIEN_MAP_UPPER_LAYER.png" id="15_jkv2x"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_67bfh"]
 size = Vector2(112, 2211)
@@ -310,6 +312,9 @@ size = Vector2(273, 289)
 size = Vector2(248.5, 275.5)
 
 [node name="Main" type="Node2D" unique_id=472835953]
+
+[node name="ShipSoundscape" type="Node" parent="."]
+script = ExtResource("20_audio")
 
 [node name="Map" type="Sprite2D" parent="." unique_id=1623396555]
 texture = ExtResource("1_tbgi4")

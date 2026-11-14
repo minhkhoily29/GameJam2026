@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://5m1ps66lwui3"
+path="res://.godot/imported/knife_slash.wav-5a298fe1a80f639e498023db40efa595.sample"
+
+[deps]
+
+source_file="res://sound affects/kenney/knife_slash.wav"
+dest_files=["res://.godot/imported/knife_slash.wav-5a298fe1a80f639e498023db40efa595.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

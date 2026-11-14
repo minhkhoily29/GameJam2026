@@ -67,6 +67,7 @@ func _physics_process(delta: float) -> void:
 				_charge_direction = offset.normalized()
 				state = State.CHARGING
 				_state_time = maxf(charge_duration, 0.0)
+				AudioManager.play_sfx(&"knife_slash", enemy.global_position)
 			else:
 				# Retry later if the room is too crowded; keep chasing meanwhile.
 				_teleport_retry_timer = 0.5
@@ -84,6 +85,7 @@ func _physics_process(delta: float) -> void:
 			if _state_time <= 0.0:
 				state = State.CHARGING
 				_state_time = maxf(charge_duration, 0.0)
+				AudioManager.play_sfx(&"knife_slash", enemy.global_position)
 		State.CHARGING:
 			if _state_time <= 0.0:
 				_begin_recovery()
@@ -162,6 +164,7 @@ func _teleport_to_clear_spot(minimum: float, maximum: float, attempts: int) -> b
 			continue
 		enemy.global_position = destination
 		enemy.reset_physics_interpolation()
+		AudioManager.play_sfx(&"enemy_teleport", destination)
 		return true
 	return false
 

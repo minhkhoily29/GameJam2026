@@ -22,12 +22,14 @@ func take_damage(amount: int = 1) -> void:
 		return
 
 	health = max(health - amount, 0)
+	AudioManager.play_sfx(&"snot_hit", global_position)
 	_hit_flash_time = 0.12
 	if _sprite != null:
 		_sprite.self_modulate = Color(1.0, 0.25, 0.25)
 	damaged.emit(health)
 
 	if health == 0:
+		AudioManager.play_sfx(&"enemy_death", global_position)
 		died.emit()
 		queue_free()
 
