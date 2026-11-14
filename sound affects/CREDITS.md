@@ -19,6 +19,7 @@ files can be traced and replaced. Pack license files are included under kenney/.
 | kenney/door_locked.ogg | metalLatch.ogg, https://kenney.nl/assets/rpg-audio | Kenney, CC0 |
 | kenney/enemy_teleport.ogg | forceField_000.ogg, https://kenney.nl/assets/sci-fi-sounds | Kenney, CC0 |
 | opengameart/enemy_teleport_02.ogg | teleport_02.ogg, https://opengameart.org/content/50-cc0-sci-fi-sfx | rubberduck, CC0 |
+| opengameart/enemy_teleport_02_immediate.wav | Trimmed from the retained rubberduck teleport_02.ogg above | rubberduck, CC0 |
 | opengameart/low_health_heartbeat.wav | heartbeat_fast_0.wav, https://opengameart.org/content/heartbeat-sounds | bart, CC0 |
 | kenney/power_up_loop.wav | engineCircular_002.ogg, https://kenney.nl/assets/sci-fi-sounds | Kenney, CC0 |
 | kenney/player_hit.ogg | impactPunch_medium_000.ogg, https://kenney.nl/assets/impact-sounds | Kenney, CC0 |
@@ -41,10 +42,14 @@ Existing project audio is reused unchanged. Its original provenance was not
 recorded in this checkout, so no new license claim is made for those files:
 
 - slime for door.ogg: player death and departure/arrival through doors.
-- opengameart/enemy_teleport_02.ogg: rubberduck teleport_02 on every successful
-  enemy teleport, including approach teleports without a hit. Uses -7 dB on SFX,
+- opengameart/enemy_teleport_02_immediate.wav: rubberduck teleport_02 on every successful
+  enemy teleport, including approach teleports without a hit. Uses -3 dB on SFX,
   fixed normal pitch and no distance falloff. The Kenney forcefield is retained
   as an unused asset; its license is in LICENSE-SCIFI.txt.
+  The active WAV skips 0.8 seconds of quiet buildup, keeps the warp through 1.5
+  seconds of the original, and applies short boundary fades. This lines the audible
+  cue up with the jump instead of a later attack. The original OGG is retained.
+  Background reduction holds for 0.65 seconds across the audible warp.
 - foot steps.ogg: only while the player actually walks, not idle or knocked back.
 - background noise.ogg: looping ship ambience, stopped when the map closes.
 - flower_pickup.wav: derived from collecting flower.mp3 with 1.416 seconds of
@@ -79,6 +84,28 @@ pickups, or bullets does not truncate them. Simultaneous voices are capped at 32
 pitch variation uses a separate RNG and does not affect seeded spawning. Headless
 runs skip opening audio voices.
 
+The mix gives pickups and combat warnings space above repeated movement/attack
+sounds. Gains account for the recordings' different source levels; the quiet key
+recording needs +8 dB to be comparable to other feedback. Current voice gains:
+
+| Event | Gain before the -2 dB SFX bus |
+| --- | --- |
+| Footstep | -21 dB |
+| Door slide | -13 dB |
+| Snot shot / impact | -5 / -11 dB |
+| Knife warning / player hit | -4 / -6 dB |
+| Enemy teleport / vanish | -3 / -2 dB |
+| Flower / key pickup | -6 / +8 dB |
+| Locked door | -12 dB |
+| Player death / final explosion | -5 / -1 dB |
+
+Footsteps, shots, and door slides use a Routine bus feeding SFX. During important
+cues this bus drops by 5 dB, including sounds already playing. Music briefly
+drops by 4 dB; the existing 8 dB low-health/power-up reduction takes precedence.
+Overlapping cues extend one hold instead of stacking gain reductions or dropping
+events. Levels recover after the cue hold, and stopping SFX clears the hold.
+Heartbeat, power-up, and enemy vanish playback gains remain at their approved levels.
+
 Player state loops are in scripts/audio/player_state_audio.gd. At 1 HP a heartbeat
 loops at +4 dB on SFX until healing or death. The existing brief damage flash is unchanged.
 Music is reduced by 8 dB during low health or a cosmos power-up. Overlapping
@@ -86,7 +113,7 @@ states share one reduction; normal music returns when both end, on death, or on 
 The ship engine ambience is silent while the low-health heartbeat is active,
 and resumes when healing stops the heartbeat. Death and scene exit clear the pause.
 A fast synthesized arcade power-up loop (-11 dB on SFX, with the SFX bus at -2 dB) runs
-only during the five-second cosmos buff, sitting just above the Music bus at -15 dB;
+only during the five-second cosmos buff, above the Music bus at -18 dB;
 another flower refreshes the timer without restarting or stacking the loop.
 Expiry, death, and scene exit stop it. The active power_up_hyper.wav is an original
 four-second synthesized loop made for this project, with eight bouncy arpeggio
