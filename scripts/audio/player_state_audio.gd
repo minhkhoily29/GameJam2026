@@ -1,10 +1,10 @@
 extends Node
 ## Player-owned state loops: no stacked voices or tails after the state ends.
 @export var low_health_threshold: int = 1
-@export var heartbeat_volume_db: float = 4.0
+@export var low_health_warning_volume_db: float = -16.0
 @export var powered_volume_db: float = -11.0
 var _player: Node
-var _heartbeat: AudioStreamPlayer
+var _low_health_warning: AudioStreamPlayer
 var _powered: AudioStreamPlayer
 var _low_health_active := false
 var _power_active := false
@@ -12,7 +12,7 @@ var _power_active := false
 func _ready() -> void:
 	_player = get_parent()
 	if DisplayServer.get_name() != "headless":
-		_heartbeat = _make_loop(preload("res://sound affects/opengameart/low_health_heartbeat.wav"), heartbeat_volume_db)
+		_low_health_warning = _make_loop(preload("res://sound affects/low_health_warning.wav"), low_health_warning_volume_db)
 		_powered = _make_loop(preload("res://sound affects/power_up_hyper.wav"), powered_volume_db)
 	_player.health_changed.connect(_on_health_changed)
 	_player.cosmos_buff_changed.connect(_on_power_changed)
@@ -36,7 +36,7 @@ func _on_health_changed(current: int, _maximum: int) -> void:
 	if active == _low_health_active:
 		return
 	_low_health_active = active
-	_set_loop(_heartbeat, active)
+	_set_loop(_low_health_warning, active)
 	_update_background_audio()
 
 func _on_power_changed(active: bool) -> void:
@@ -62,14 +62,14 @@ func _set_loop(voice: AudioStreamPlayer, active: bool) -> void:
 func _on_died() -> void:
 	_low_health_active = false
 	_power_active = false
-	_set_loop(_heartbeat, false)
+	_set_loop(_low_health_warning, false)
 	_set_loop(_powered, false)
 	_update_background_audio()
 
 func _exit_tree() -> void:
 	AudioManager.set_music_ducked(false)
 	AudioManager.set_engine_paused(false)
-	for voice in [_heartbeat, _powered]:
+	for voice in [_low_health_warning, _powered]:
 		if is_instance_valid(voice):
 			voice.stop()
 			voice.stream = null
