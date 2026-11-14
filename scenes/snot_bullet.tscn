@@ -46,6 +46,8 @@ script = ExtResource("1_projectile")
 [node name="AnimatableBody2D" type="AnimatedSprite2D" parent="." unique_id=1659719919]
 scale = Vector2(0.13, 0.08)
 sprite_frames = SubResource("SpriteFrames_67bfh")
+autoplay = "default"
+frame_progress = 0.6883787
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2021629358]
 shape = SubResource("Circle_bullet")

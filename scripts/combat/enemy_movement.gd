@@ -1,6 +1,6 @@
 extends Node
 ## Movement component for a human enemy CharacterBody2D.
-enum State { CHASING, WINDUP, CHARGING, RECOVERING }
+enum State { CHASING, WINDUP, CHARGING, RECOVERING, TELEPORT_WARNING }
 
 @export_category("Chase")
 @export var normal_speed: float = 200.0
@@ -19,6 +19,7 @@ enum State { CHASING, WINDUP, CHARGING, RECOVERING }
 @export_category("Teleport near player")
 @export var teleport_attempts: int = 60
 @export var teleport_cooldown: float = 5.0
+@export var teleport_warning_duration: float = 0.4
 @export var teleport_trigger_distance: float = 240.0
 @export var teleport_min_distance: float = 100.0
 @export var teleport_max_distance: float = 150.0
@@ -37,6 +38,8 @@ var _sprite: AnimatedSprite2D
 var _collision: CollisionShape2D
 var _slash_playing: bool = false
 var _engaged: bool = false
+var _teleport_destination := Vector2.ZERO
+var _landing_marker: Node2D
 
 
 func _ready() -> void:
@@ -76,6 +79,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		_engaged = offset.length() <= detection_range and visible_player
 	if not _engaged:
+		_clear_landing_marker()
 		state = State.CHASING
 		_state_time = 0.0
 		_slash_playing = false
@@ -85,17 +89,17 @@ func _physics_process(delta: float) -> void:
 		if offset.length() <= teleport_trigger_distance and _has_clear_path(enemy.global_position, player.global_position):
 			var minimum := maxf(teleport_min_distance, 1.0)
 			if _teleport_to_clear_spot(minimum, maxf(teleport_max_distance, minimum), teleport_attempts):
-				_teleport_timer = maxf(teleport_cooldown, 0.0)
-				offset = player.global_position - enemy.global_position
-				_charge_direction = offset.normalized()
-				state = State.CHARGING
-				_state_time = maxf(charge_duration, 0.0)
-				_play_slash()
-				AudioManager.play_sfx(&"knife_slash", enemy.global_position)
+				state = State.TELEPORT_WARNING
+				_state_time = maxf(teleport_warning_duration, 0.05)
+				_slash_playing = false
+				_show_landing_marker()
 			else:
 				# Retry later if the room is too crowded; keep chasing meanwhile.
 				_teleport_retry_timer = 0.5
 	match state:
+		State.TELEPORT_WARNING:
+			if _state_time <= 0.0:
+				_finish_warned_teleport()
 		State.CHASING:
 			# Stopping distance only pauses the chase; it must never block attacking.
 			if offset.length() <= charge_range and not offset.is_zero_approx() and _charge_timer <= 0.0 and _has_clear_path(enemy.global_position, player.global_position):
@@ -137,6 +141,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _begin_recovery() -> void:
+	_clear_landing_marker()
 	state = State.RECOVERING
 	_state_time = maxf(recovery_duration, 0.0)
 	_charge_timer = maxf(charge_cooldown, 0.0)
@@ -189,11 +194,7 @@ func _teleport_to_clear_spot(minimum: float, maximum: float, attempts: int) -> b
 		# Stay on the player's side of walls and closed doors.
 		if not _has_clear_path(player.global_position, destination):
 			continue
-		_play_teleport_effect()
-		enemy.global_position = destination
-		enemy.reset_physics_interpolation()
-		_play_teleport_effect(true)
-		AudioManager.play_sfx(&"enemy_teleport", destination)
+		_teleport_destination = destination
 		return true
 	return false
 
@@ -280,3 +281,48 @@ func _play_teleport_effect(reverse: bool = false) -> void:
 		effect.play("teleport", -1.0, true)
 	else:
 		effect.play("teleport", 1.0, false)
+
+func _show_landing_marker() -> void:
+	_clear_landing_marker()
+	_landing_marker = Node2D.new()
+	_landing_marker.set_script(preload("res://scripts/combat/teleport_marker.gd"))
+	_landing_marker.name = "TeleportLandingMarker"
+	enemy.add_child(_landing_marker)
+	_landing_marker.top_level = true
+	_landing_marker.global_position = _teleport_destination
+	_landing_marker.z_index = 8
+
+
+func _clear_landing_marker() -> void:
+	if is_instance_valid(_landing_marker):
+		_landing_marker.queue_free()
+	_landing_marker = null
+
+
+func _finish_warned_teleport() -> void:
+	_clear_landing_marker()
+	# The player or another enemy may have moved onto the advertised spot.
+	var query := PhysicsShapeQueryParameters2D.new()
+	query.shape = _collision.shape
+	query.transform = _collision.global_transform
+	query.transform.origin += _teleport_destination - enemy.global_position
+	query.collision_mask = enemy.collision_mask
+	query.exclude = [enemy.get_rid()]
+	query.margin = 4.0
+	var blocked := not enemy.get_world_2d().direct_space_state.intersect_shape(query, 1).is_empty()
+	if blocked or not _has_clear_path(player.global_position, _teleport_destination):
+		state = State.CHASING
+		_teleport_retry_timer = 0.5
+		return
+	_play_teleport_effect()
+	enemy.global_position = _teleport_destination
+	enemy.reset_physics_interpolation()
+	_play_teleport_effect(true)
+	AudioManager.play_sfx(&"enemy_teleport", enemy.global_position)
+	_teleport_timer = maxf(teleport_cooldown, 0.0)
+	_charge_direction = enemy.global_position.direction_to(player.global_position)
+	state = State.CHARGING
+	_state_time = maxf(charge_duration, 0.0)
+	enemy.velocity = _charge_direction * charge_speed
+	_play_slash()
+	AudioManager.play_sfx(&"knife_slash", enemy.global_position)
