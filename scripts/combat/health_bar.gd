@@ -9,4 +9,4 @@ func _ready() -> void:
 
 
 func update():
-    value = clampf(player.currentHealth, 0.0, max_value)
+    value = clampf(player.currentHealth, 0.0, max_health)
