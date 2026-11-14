@@ -4,6 +4,8 @@ extends CharacterBody2D
 var health: int = 3
 var is_dead: bool = false
 var has_final_key: bool = false
+var enemies_killed: int = 0
+signal kill_count_changed(total: int)
 signal final_key_collected
 signal health_changed(current_health: int, maximum_health: int)
 signal died
@@ -23,6 +25,7 @@ signal hit_by_enemy(source_position: Vector2)
 
 var facing_direction := Vector2.RIGHT
 var move_input := Vector2.ZERO
+var _sneeze_playing: bool = false
 var _knockback_velocity := Vector2.ZERO
 var _knockback_time: float = 0.0
 var _enemy_hit_timer: float = 0.0
@@ -37,6 +40,9 @@ var _pre_cosmos_damage: float = 1.0
 
 
 func _ready() -> void:
+	if sprite.sprite_frames.has_animation("sneeze"):
+		sprite.sprite_frames.set_animation_loop("sneeze", false)
+	sprite.animation_finished.connect(_on_player_animation_finished)
 	health = max_health
 	health_changed.emit(health, max_health)
 	print("Player health: ", health, "/", max_health)
@@ -54,6 +60,7 @@ func _die() -> void:
 	if is_dead:
 		return
 	is_dead = true
+	_sneeze_playing = false
 	AudioManager.play_sfx(&"player_death")
 	velocity = Vector2.ZERO
 	move_input = Vector2.ZERO
@@ -109,9 +116,9 @@ func _physics_process(delta: float) -> void:
 		_knockback_velocity = _knockback_velocity.move_toward(Vector2.ZERO, knockback_deceleration * delta)
 	else:
 		velocity = move_input * move_speed
-	if move_input.x > 0.05:
+	if not _sneeze_playing and move_input.x > 0.05:
 		sprite.flip_h = false  # Face right
-	elif move_input.x < -0.05:
+	elif not _sneeze_playing and move_input.x < -0.05:
 		sprite.flip_h = true   # Face left
 	move_and_slide()
 	for index in range(get_slide_collision_count()):
@@ -123,12 +130,14 @@ func _physics_process(delta: float) -> void:
 	var actual_velocity := get_real_velocity()
 
 	if actual_velocity.length() > 1.0:
-		sprite.play(walk_animation)
+		if not _sneeze_playing:
+			sprite.play(walk_animation)
 		if _knockback_time <= 0.0 and _footstep_time <= 0.0:
 			AudioManager.play_sfx(&"footstep")
 			_footstep_time = clampf(85.0 / actual_velocity.length(), 0.23, 0.5)
 	else:
-		sprite.play("idle")
+		if not _sneeze_playing:
+			sprite.play("idle")
 		_footstep_time = 0.0
 
 
@@ -194,6 +203,7 @@ func teleport_to(destination: Vector2) -> void:
 		return
 
 	is_teleporting = true
+	_sneeze_playing = false
 	AudioManager.play_sfx(&"door_slide")
 	velocity = Vector2.ZERO
 	_knockback_velocity = Vector2.ZERO
@@ -255,6 +265,7 @@ func shoot() -> void:
 			aim_direction = target_direction
 
 	if snot_attack.fire(aim_direction):
+		_play_sneeze()
 		facing_direction = aim_direction
 		if absf(aim_direction.x) > 0.05:
 			sprite.flip_h = aim_direction.x < 0.0
@@ -288,3 +299,24 @@ func _update_cosmos_buff(delta: float) -> void:
 		move_speed = _pre_cosmos_speed
 		if is_instance_valid(snot_attack):
 			snot_attack.damage_multiplier = _pre_cosmos_damage
+
+
+func record_enemy_kill() -> void:
+	enemies_killed += 1
+	kill_count_changed.emit(enemies_killed)
+
+func _play_sneeze() -> void:
+	if not sprite.sprite_frames.has_animation("sneeze"):
+		return
+	_sneeze_playing = true
+	sprite.stop()
+	sprite.play("sneeze", 1.0, false)
+
+
+func _on_player_animation_finished() -> void:
+	if sprite.animation != &"sneeze":
+		return
+	_sneeze_playing = false
+	if is_dead or is_teleporting:
+		return
+	sprite.play(walk_animation if get_real_velocity().length() > 1.0 else &"idle")
