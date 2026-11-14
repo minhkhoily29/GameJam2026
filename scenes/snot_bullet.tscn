@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/projectile.gd" id="1_projectile"]
+[ext_resource type="Texture2D" path="res://assets/ALIEN_COSMO_COLLECTIBLE.png" id="2_placeholder"]
+
+[sub_resource type="CircleShape2D" id="Circle_bullet"]
+radius = 7.0
+
+[sub_resource type="CircleShape2D" id="Circle_sweep"]
+radius = 7.0
+
+[node name="SnotBullet" type="Area2D"]
+collision_layer = 0
+collision_mask = 3
+script = ExtResource("1_projectile")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(0.35, 1, 0.2, 1)
+scale = Vector2(0.13, 0.08)
+texture = ExtResource("2_placeholder")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Circle_bullet")
+
+[node name="ShapeCast2D" type="ShapeCast2D" parent="."]
+shape = SubResource("Circle_sweep")
+target_position = Vector2(15, 0)
+collision_mask = 3
+collide_with_areas = true

@@ -1,14 +1,19 @@
 [gd_scene format=3 uid="uid://dh0ed54i35pqk"]
 
 [ext_resource type="Texture2D" uid="uid://cwv1unp54ffb8" path="res://assets/ALIEN_COSMO_COLLECTIBLE.png" id="1_quu4h"]
+[ext_resource type="Script" uid="uid://vha2nt1lppbf" path="res://scripts/combat/cosmos_flower.gd" id="1_wqcph"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_67bfh"]
-radius = 53.08484
+radius = 21.023796
 
-[node name="Node2D" type="Area2D" unique_id=1563251331]
+[node name="CosmosFlower" type="Area2D" unique_id=1563251331]
+script = ExtResource("1_wqcph")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1352892268]
+position = Vector2(9.536743e-07, 1.0000019)
+scale = Vector2(0.41796875, 0.41796878)
 texture = ExtResource("1_quu4h")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=190479126]
+position = Vector2(1, 4)
 shape = SubResource("CircleShape2D_67bfh")
