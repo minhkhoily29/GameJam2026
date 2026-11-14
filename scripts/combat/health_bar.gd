@@ -4,7 +4,7 @@ extends ProgressBar
 @export var player: Player 
 
 func _ready() -> void:
-    player.Health.change(update)
+    player.healthChange.change(update)
     update()
 
 
