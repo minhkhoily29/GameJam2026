@@ -26,6 +26,7 @@ signal hit_by_enemy(source_position: Vector2)
 
 var facing_direction := Vector2.RIGHT
 var move_input := Vector2.ZERO
+var _controller_move_input := Vector2.ZERO
 var _sneeze_playing: bool = false
 var _knockback_velocity := Vector2.ZERO
 var _knockback_time: float = 0.0
@@ -75,6 +76,15 @@ func _die() -> void:
 		sprite.play("die", 1.0, false)
 	died.emit()
 	print("Game over: player has no health remaining.")
+	if sprite.animation == &"die" and sprite.is_playing() and sprite.get_playing_speed() > 0.0:
+		await sprite.animation_finished
+	_return_to_title.call_deferred()
+
+
+func _return_to_title() -> void:
+	var error := get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+	if error != OK:
+		push_error("Could not return to title screen: " + error_string(error))
 
 
 # Called by ControllerUDP when a controller packet arrives.
@@ -85,38 +95,33 @@ func update_aim(raw_x: int, raw_y: int) -> void:
 		(raw_x - 2048) / 2048.0,
 		(raw_y - 2048) / 2048.0
 	)
-
 	if invert_y:
 		stick.y = -stick.y
-
 	var strength := minf(stick.length(), 1.0)
-
 	if strength <= deadzone:
+		_controller_move_input = Vector2.ZERO
+	else:
+		var adjusted_strength := (strength - deadzone) / (1.0 - deadzone)
+		_controller_move_input = stick.normalized() * adjusted_strength
+	# Resolve immediately so a fire button in this packet uses the latest aim.
+	_update_movement_input()
+
+
+func _update_movement_input() -> void:
+	if is_dead:
 		move_input = Vector2.ZERO
 		return
-
-	facing_direction = stick.normalized()
-
-	# Smoothly scale movement outside the deadzone.
-	var adjusted_strength := (strength - deadzone) / (1.0 - deadzone)
-	move_input = facing_direction * adjusted_strength
+	var keyboard_direction := Vector2.ZERO
+	if keyboard_enabled:
+		keyboard_direction = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	# An idle keyboard must not erase controller movement.
+	move_input = keyboard_direction if not keyboard_direction.is_zero_approx() else _controller_move_input
+	if not move_input.is_zero_approx():
+		facing_direction = move_input.normalized()
 
 
 func _physics_process(delta: float) -> void:
-	if keyboard_enabled and not is_dead and not is_teleporting:
-		var keyboard_direction := Input.get_vector(
-			"ui_left",
-			"ui_right",
-			"ui_up",
-			"ui_down"
-		)
-
-		if keyboard_direction != Vector2.ZERO:
-			move_input = keyboard_direction
-			facing_direction = keyboard_direction.normalized()
-		else:
-			move_input = Vector2.ZERO
-			
+	_update_movement_input()
 	_footstep_time = maxf(_footstep_time - delta, 0.0)
 	_update_cosmos_buff(delta)
 	_enemy_hit_timer = maxf(_enemy_hit_timer - delta, 0.0)
