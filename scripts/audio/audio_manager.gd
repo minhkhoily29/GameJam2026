@@ -2,6 +2,7 @@ extends Node
 ## Shared playback survives enemy/projectile/pickup deletion. Uses its own RNG so
 ## pitch variation never changes seeded enemy spawning or teleport placement.
 const MAX_VOICES := 32
+const MUSIC_DUCK_DB: float = -8.0
 const SOUNDS := {
 	&"snot_shoot": [preload("res://sound affects/opengameart/snot_spit.wav"), -8.0],
 	&"snot_hit": [preload("res://sound affects/opengameart/snot_hit.wav"), -13.0],
@@ -21,6 +22,8 @@ var _rng := RandomNumberGenerator.new()
 var _voices: Array[Node] = []
 var _ambience: AudioStreamPlayer
 var _music: AudioStreamPlayer
+var _music_ducked := false
+var _engine_paused := false
 var _ambience_users: int = 0
 var _next_locked_door_sound_msec: int = 0
 
@@ -99,6 +102,16 @@ func stop_all_sfx() -> void:
 			voice.queue_free()
 	_voices.clear()
 
+func set_music_ducked(active: bool) -> void:
+	_music_ducked = active
+	if is_instance_valid(_music):
+		_music.volume_db = MUSIC_DUCK_DB if active else 0.0
+
+func set_engine_paused(active: bool) -> void:
+	_engine_paused = active
+	if is_instance_valid(_ambience):
+		_ambience.stream_paused = active
+
 func start_ambience() -> void:
 	_ambience_users += 1
 	if DisplayServer.get_name() == "headless":
@@ -111,6 +124,7 @@ func start_ambience() -> void:
 		theme.loop_end = roundi(theme.get_length() * theme.mix_rate)
 		_music.stream = theme
 		_music.bus = &"Music"
+		_music.volume_db = MUSIC_DUCK_DB if _music_ducked else 0.0
 		add_child(_music)
 		_music.play()
 	if is_instance_valid(_ambience):
@@ -122,6 +136,7 @@ func start_ambience() -> void:
 	_ambience.bus = &"Ambience"
 	add_child(_ambience)
 	_ambience.play()
+	_ambience.stream_paused = _engine_paused
 
 func stop_ambience() -> void:
 	_ambience_users = maxi(_ambience_users - 1, 0)

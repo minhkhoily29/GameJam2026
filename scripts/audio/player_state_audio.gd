@@ -1,7 +1,7 @@
 extends Node
 ## Player-owned state loops: no stacked voices or tails after the state ends.
 @export var low_health_threshold: int = 1
-@export var heartbeat_volume_db: float = -4.0
+@export var heartbeat_volume_db: float = 4.0
 @export var powered_volume_db: float = -11.0
 var _player: Node
 var _heartbeat: AudioStreamPlayer
@@ -37,6 +37,7 @@ func _on_health_changed(current: int, _maximum: int) -> void:
 		return
 	_low_health_active = active
 	_set_loop(_heartbeat, active)
+	_update_background_audio()
 
 func _on_power_changed(active: bool) -> void:
 	active = active and not _player.is_dead
@@ -44,6 +45,11 @@ func _on_power_changed(active: bool) -> void:
 		return
 	_power_active = active
 	_set_loop(_powered, active)
+	_update_background_audio()
+
+func _update_background_audio() -> void:
+	AudioManager.set_music_ducked(_low_health_active or _power_active)
+	AudioManager.set_engine_paused(_low_health_active)
 
 func _set_loop(voice: AudioStreamPlayer, active: bool) -> void:
 	if not is_instance_valid(voice):
@@ -58,8 +64,11 @@ func _on_died() -> void:
 	_power_active = false
 	_set_loop(_heartbeat, false)
 	_set_loop(_powered, false)
+	_update_background_audio()
 
 func _exit_tree() -> void:
+	AudioManager.set_music_ducked(false)
+	AudioManager.set_engine_paused(false)
 	for voice in [_heartbeat, _powered]:
 		if is_instance_valid(voice):
 			voice.stop()
