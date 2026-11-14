@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dg1mp7qs6xtwu"
+path="res://.godot/imported/nuh uh short.wav-4588fa8a55d562dcfea248a78ad5530b.sample"
+
+[deps]
+
+source_file="res://sound affects/nuh uh short.wav"
+dest_files=["res://.godot/imported/nuh uh short.wav-4588fa8a55d562dcfea248a78ad5530b.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

@@ -1,8 +1,7 @@
 [gd_scene format=4 uid="uid://dddj6q2xethpk"]
 
-[ext_resource type="Texture2D" uid="uid://ckbmaegscmjsv" path="res://assets/ALIEN_TITLE_SCREEN.png" id="1_l6cm7"]
 [ext_resource type="Script" uid="uid://qituepwx1u4v" path="res://scripts/main_menu.gd" id="1_wu84c"]
-[ext_resource type="FontFile" uid="uid://ur0ctrsoyv2u" path="res://assets/Lobster-Regular.ttf" id="2_bqqt6"]
+[ext_resource type="Texture2D" uid="uid://cm6j55mif3hbf" path="res://assets/irl start background.jpg" id="2_bqqt6"]
 [ext_resource type="AudioStream" uid="uid://df3y64q542k72" path="res://sound affects/gun.ogg" id="3_8ln24"]
 
 [sub_resource type="AudioStreamWAV" id="AudioStreamWAV_ekxnf"]
@@ -24,7 +23,7 @@ script = ExtResource("1_wu84c")
 layout_mode = 0
 offset_right = 1156.0
 offset_bottom = 647.0
-texture = ExtResource("1_l6cm7")
+texture = ExtResource("2_bqqt6")
 expand_mode = 1
 
 [node name="CenterContainer" type="CenterContainer" parent="." unique_id=946890212]
@@ -42,39 +41,27 @@ use_top_left = true
 stream = SubResource("AudioStreamWAV_ekxnf")
 autoplay = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=656195889]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.643
-anchor_top = 0.5
-anchor_right = 0.643
-anchor_bottom = 0.5
-offset_left = -701.736
-offset_top = -212.0
-offset_right = 342.26398
-offset_bottom = 235.0
-alignment = 1
-
-[node name="Label" type="Label" parent="VBoxContainer" unique_id=859699647]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_bqqt6")
-theme_override_font_sizes/font_size = 109
-text = "\"Goodbye, Old Friend.\""
-horizontal_alignment = 1
-
-[node name="PlayButton" type="Button" parent="VBoxContainer" unique_id=683944171]
-layout_mode = 2
-theme_override_font_sizes/font_size = 93
-text = "Play"
-
-[node name="QuitButton" type="Button" parent="VBoxContainer" unique_id=795701179]
-layout_mode = 2
-theme_override_font_sizes/font_size = 100
-text = "Quit"
-
 [node name="click sound" type="AudioStreamPlayer" parent="." unique_id=511661029]
 stream = ExtResource("3_8ln24")
 autoplay = true
 
-[connection signal="pressed" from="VBoxContainer/PlayButton" to="." method="_on_play_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/QuitButton" to="." method="_on_quit_button_pressed"]
+[node name="PlayButton" type="Button" parent="." unique_id=683944171]
+layout_mode = 0
+offset_left = 432.0
+offset_top = 502.0
+offset_right = 587.0
+offset_bottom = 579.0
+theme_override_font_sizes/font_size = 50
+text = "Play"
+
+[node name="QuitButton" type="Button" parent="." unique_id=795701179]
+layout_mode = 0
+offset_left = 619.0
+offset_top = 501.0
+offset_right = 777.0
+offset_bottom = 578.0
+theme_override_font_sizes/font_size = 50
+text = "Quit"
+
+[connection signal="pressed" from="PlayButton" to="." method="_on_play_button_pressed"]
+[connection signal="pressed" from="QuitButton" to="." method="_on_quit_button_pressed"]

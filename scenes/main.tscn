@@ -684,7 +684,7 @@ script = ExtResource("40_state_audio")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CharacterBody2D" unique_id=1160666951]
 scale = Vector2(0.31775007, 0.33249998)
 sprite_frames = SubResource("SpriteFrames_o6kvn")
-animation = &"die"
+animation = &"sneeze"
 autoplay = "idle"
 
 [node name="ControllerUDP" type="Node2D" parent="CharacterBody2D" unique_id=1430847332]
