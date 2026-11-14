@@ -1,13 +1,13 @@
 
 extends ProgressBar
 
-@export var full_HP: float = 100.0
+@export var player: Player 
 
 func _ready() -> void:
-    max_value = full_HP
-    value = full_HP
-    show_percentage = false
-    mouse_filter = Control.MOUSE_FILTER_IGNORE
+    player.health_changed.connect(update)
+    update(player.health, player.max_health)
 
-func update_health(current_health: float) -> void:
-    value = clampf(current_health, 0.0, max_value)
+
+func update(current_health: int, maximum_health: int) -> void:
+    max_value = maximum_health
+    value = clampi(current_health, 0, maximum_health)
