@@ -8,5 +8,5 @@ func _ready() -> void:
     update()
 
 
-func update(current_health: float) -> void:
-    value = clampf(current_health, 0.0, max_value)
+func update():
+    value = clampf(player.currentHealth, 0.0, max_value)
