@@ -174,6 +174,7 @@ func _teleport_to_clear_spot(minimum: float, maximum: float, attempts: int) -> b
 		_play_teleport_effect()
 		enemy.global_position = destination
 		enemy.reset_physics_interpolation()
+		_play_teleport_effect(true)
 		AudioManager.play_sfx(&"enemy_teleport", destination)
 		return true
 	return false
@@ -220,14 +221,14 @@ func _on_animation_finished() -> void:
 		_update_sprite()
 
 
-func _play_teleport_effect() -> void:
+func _play_teleport_effect(reverse: bool = false) -> void:
 	if _sprite == null or _sprite.sprite_frames == null:
 		return
 	if not _sprite.sprite_frames.has_animation("teleport"):
 		return
-	# Animate the departure independently so the enemy can charge immediately.
+	# Animate departure/arrival independently so the enemy can charge immediately.
 	var effect := AnimatedSprite2D.new()
-	effect.name = "TeleportEffect"
+	effect.name = "TeleportArrivalEffect" if reverse else "TeleportEffect"
 	effect.sprite_frames = _sprite.sprite_frames
 	effect.centered = _sprite.centered
 	effect.offset = _sprite.offset
@@ -237,4 +238,7 @@ func _play_teleport_effect() -> void:
 	enemy.get_parent().add_child(effect)
 	effect.global_transform = _sprite.global_transform
 	effect.animation_finished.connect(effect.queue_free, CONNECT_ONE_SHOT)
-	effect.play("teleport", 1.0, false)
+	if reverse:
+		effect.play("teleport", -1.0, true)
+	else:
+		effect.play("teleport", 1.0, false)

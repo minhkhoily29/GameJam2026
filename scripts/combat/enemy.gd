@@ -30,6 +30,9 @@ func take_damage(amount: int = 1) -> void:
 
 	if health == 0:
 		AudioManager.play_sfx(&"enemy_death", global_position)
+		var player := get_tree().get_first_node_in_group("player")
+		if player != null and player.has_method("record_enemy_kill"):
+			player.record_enemy_kill()
 		died.emit()
 		queue_free()
 

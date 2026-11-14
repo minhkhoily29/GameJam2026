@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://bumi35yf0vmu8" path="res://assets/Alien_Diesno_tears.png" id="6_a8y0u"]
 [ext_resource type="Script" uid="uid://bu2wajpkjnihj" path="res://scripts/Door1.gd" id="7_o6xl0"]
 [ext_resource type="Script" uid="uid://csypic65ohahx" path="res://scripts/Door2.gd" id="8_tipki"]
+[ext_resource type="Texture2D" uid="uid://bfb15f00ohtra" path="res://assets/AlienSneezeAttack.png" id="9_jscy8"]
 [ext_resource type="Script" uid="uid://cb0naltnkkkl1" path="res://scripts/combat/enemy_section.gd" id="9_sections"]
 [ext_resource type="Script" uid="uid://jqgncwxuh3jj" path="res://scripts/combat/weapon.gd" id="10_weapon"]
 [ext_resource type="PackedScene" path="res://scenes/snot_bullet.tscn" id="11_snot"]
@@ -20,6 +21,7 @@
 [ext_resource type="Script" uid="uid://bp8ashbt1vtv8" path="res://scripts/audio/ship_soundscape.gd" id="20_audio"]
 [ext_resource type="Script" uid="uid://rwd1j4k0kihu" path="res://scripts/KeyPickup.gd" id="30_key_pickup"]
 [ext_resource type="Script" uid="uid://dtkbyoo8v70r5" path="res://scripts/FinalDoor.gd" id="31_final_door"]
+[ext_resource type="PackedScene" path="res://scenes/HUD.tscn" id="40_health_hud"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5poiv"]
 atlas = ExtResource("18_dp3eg")
@@ -192,6 +194,26 @@ region = Rect2(3000, 0, 500, 500)
 atlas = ExtResource("4_choun")
 region = Rect2(3500, 0, 500, 500)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_chjal"]
+atlas = ExtResource("9_jscy8")
+region = Rect2(0, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cjqg0"]
+atlas = ExtResource("9_jscy8")
+region = Rect2(500, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vchkt"]
+atlas = ExtResource("9_jscy8")
+region = Rect2(1000, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_txyw0"]
+atlas = ExtResource("9_jscy8")
+region = Rect2(1500, 0, 500, 500)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vc5cj"]
+atlas = ExtResource("9_jscy8")
+region = Rect2(2000, 0, 500, 500)
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_jkv2x"]
 atlas = ExtResource("6_a8y0u")
 region = Rect2(0, 0, 500, 500)
@@ -301,6 +323,26 @@ animations = [{
 "loop": 1,
 "name": &"idle",
 "speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_chjal")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cjqg0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_vchkt")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_txyw0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_vc5cj")
+}],
+"loop": 1,
+"name": &"sneeze",
+"speed": 5.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -523,9 +565,8 @@ script = ExtResource("1_0wfyh")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CharacterBody2D" unique_id=1160666951]
 scale = Vector2(0.31775007, 0.33249998)
 sprite_frames = SubResource("SpriteFrames_o6kvn")
-animation = &"die"
+animation = &"sneeze"
 autoplay = "idle"
-frame_progress = 0.68481934
 
 [node name="ControllerUDP" type="Node2D" parent="CharacterBody2D" unique_id=1430847332]
 script = ExtResource("2_sugp2")
@@ -581,7 +622,6 @@ polygon = PackedVector2Array(-1080, 0, 140, 0, 140, 990, -1080, 990)
 collision_layer = 0
 script = ExtResource("9_sections")
 minimum_enemies = 4
-maximum_enemies = 4
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/ObservationRoom" unique_id=1154565772]
 polygon = PackedVector2Array(280, -700, 990, -700, 990, 0, 280, 0)
@@ -656,3 +696,5 @@ frame_progress = 0.2744229
 position = Vector2(-93, -669)
 scale = Vector2(0.18000007, 0.18899979)
 shape = SubResource("CircleShape2D_o6kvn")
+
+[node name="HUD" parent="." unique_id=1610942088 instance=ExtResource("40_health_hud")]
