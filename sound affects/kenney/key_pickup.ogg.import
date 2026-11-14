@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://cpgisal5pfosv"
+path="res://.godot/imported/key_pickup.ogg-005483d455da83acd1f13278266dd4b6.oggvorbisstr"
+
+[deps]
+
+source_file="res://sound affects/kenney/key_pickup.ogg"
+dest_files=["res://.godot/imported/key_pickup.ogg-005483d455da83acd1f13278266dd4b6.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

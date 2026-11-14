@@ -1,7 +1,6 @@
 extends Node
 ## Shared playback survives enemy/projectile/pickup deletion. Uses its own RNG so
 ## pitch variation never changes seeded enemy spawning or teleport placement.
-signal sound_played(event: StringName)
 const MAX_VOICES := 32
 const SOUNDS := {
 	&"snot_shoot": [preload("res://sound affects/opengameart/snot_spit.wav"), -8.0],
@@ -14,6 +13,8 @@ const SOUNDS := {
 	&"enemy_teleport": [preload("res://sound affects/slime for door.ogg"), -17.0],
 	&"footstep": [preload("res://sound affects/foot steps.ogg"), -19.0],
 	&"flower_pickup": [preload("res://sound affects/flower_pickup.wav"), -12.0],
+	&"key_pickup": [preload("res://sound affects/kenney/key_pickup.ogg"), -12.0],
+	&"final_door_explosion": [preload("res://sound affects/lowFrequency_explosion_000.ogg"), -13.0],
 }
 var _rng := RandomNumberGenerator.new()
 var _voices: Array[Node] = []
@@ -39,9 +40,8 @@ func play_sfx(event: StringName, world_position: Variant = null) -> Node:
 	if not SOUNDS.has(event):
 		push_warning("Unknown sound event: %s" % event)
 		return null
-	# Dedicated/headless runs validate event routing without starting an audio device.
+	# Headless/server runs do not need an audio device.
 	if DisplayServer.get_name() == "headless":
-		sound_played.emit(event)
 		return null
 	while _voices.size() >= MAX_VOICES:
 		var oldest := _voices.pop_front() as Node
@@ -65,13 +65,14 @@ func play_sfx(event: StringName, world_position: Variant = null) -> Node:
 		voice.pitch_scale *= 1.45
 	elif event == &"player_death":
 		voice.pitch_scale *= 0.8
+	elif event == &"final_door_explosion":
+		voice.pitch_scale = 0.9
 	add_child(voice)
 	if voice is AudioStreamPlayer2D:
 		voice.global_position = world_position
 	_voices.append(voice)
 	voice.finished.connect(_release_voice.bind(voice), CONNECT_ONE_SHOT)
 	voice.play()
-	sound_played.emit(event)
 	return voice
 
 func _release_voice(voice: Node) -> void:
