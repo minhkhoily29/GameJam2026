@@ -1,6 +1,6 @@
 extends Node
 ## Movement component for a human enemy CharacterBody2D.
-enum State { CHASING, WINDUP, CHARGING, RECOVERING, TELEPORT_WARNING }
+enum State { CHASING, WINDUP, CHARGING, RECOVERING }
 
 const CHASE_CELL_SIZE := 32.0
 const CHASE_PATH_PADDING := 160.0
@@ -22,28 +22,16 @@ const CHASE_REPATH_INTERVAL := 0.6
 @export var charge_duration: float = 0.8
 @export var recovery_duration: float = 0.6
 @export var charge_cooldown: float = 2.5
-@export_category("Teleport near player")
-@export var teleport_attempts: int = 60
-@export var teleport_cooldown: float = 3.0
-@export var teleport_warning_duration: float = 0.55
-@export var teleport_min_distance: float = 170.0
-@export var teleport_max_distance: float = 230.0
-@export var teleport_min_displacement: float = 80.0
-
 var player: Node2D
 var enemy: CharacterBody2D
 var state: State = State.CHASING
 var _state_time: float = 0.0
 var _charge_timer: float = 0.0
-var _teleport_timer: float = 0.0
-var _teleport_retry_timer: float = 0.0
 var _charge_direction := Vector2.ZERO
 var _sprite: AnimatedSprite2D
 var _collision: CollisionShape2D
 var _slash_playing: bool = false
 var _engaged: bool = false
-var _teleport_destination := Vector2.ZERO
-var _landing_marker: Node2D
 var _attack_warning: Label
 var _chase_path := PackedVector2Array()
 var _chase_goal := Vector2.ZERO
@@ -79,15 +67,12 @@ func _ready() -> void:
 	_attack_warning.add_theme_constant_override("outline_size", 9)
 	_attack_warning.hide()
 	enemy.add_child.call_deferred(_attack_warning)
-	_teleport_timer = maxf(teleport_cooldown, 0.0)
 
 
 func _physics_process(delta: float) -> void:
-	_teleport_timer = maxf(_teleport_timer - delta, 0.0)
 	if not is_instance_valid(player):
 		player = get_tree().get_first_node_in_group("player") as Node2D
 	if player == null or player.get("is_dead") == true:
-		_clear_landing_marker()
 		enemy.velocity = Vector2.ZERO
 		state = State.CHASING
 		_slash_playing = false
@@ -97,18 +82,14 @@ func _physics_process(delta: float) -> void:
 	_state_time = maxf(_state_time - delta, 0.0)
 	_repath_time = maxf(_repath_time - delta, 0.0)
 	var desired_velocity := Vector2.ZERO
-	_teleport_retry_timer = maxf(_teleport_retry_timer - delta, 0.0)
 	var offset := player.global_position - enemy.global_position
 	var visible_player := _has_clear_path(enemy.global_position, player.global_position)
 	if _engaged:
 		_engaged = offset.length() <= maxf(disengage_range, detection_range)
 	else:
 		_engaged = offset.length() <= detection_range and (visible_player or _player_in_spawn_section())
-	if state != State.TELEPORT_WARNING:
-		_try_warned_teleport()
-	if not _engaged and state != State.TELEPORT_WARNING:
+	if not _engaged:
 		_chase_path.clear()
-		_clear_landing_marker()
 		state = State.CHASING
 		_state_time = 0.0
 		_slash_playing = false
@@ -116,11 +97,6 @@ func _physics_process(delta: float) -> void:
 		_update_sprite()
 		return
 	match state:
-		State.TELEPORT_WARNING:
-			if _state_time <= 0.0:
-				_finish_warned_teleport()
-				if state == State.CHARGING:
-					desired_velocity = _charge_direction * charge_speed
 		State.CHASING:
 			# Stopping distance only pauses the chase; it must never block attacking.
 			if offset.length() <= charge_range and not offset.is_zero_approx() and _charge_timer <= 0.0 and visible_player:
@@ -268,7 +244,6 @@ func _closest_chase_cell(grid: AStarGrid2D, position: Vector2, check_route: bool
 
 
 func _begin_recovery() -> void:
-	_clear_landing_marker()
 	state = State.RECOVERING
 	_state_time = maxf(recovery_duration, 0.0)
 	_charge_timer = maxf(charge_cooldown, 0.0)
@@ -277,7 +252,6 @@ func _begin_recovery() -> void:
 
 func retreat_after_hit(target: Node2D) -> void:
 	player = target
-	_clear_landing_marker()
 	_chase_path.clear()
 	_repath_time = 0.0
 	state = State.CHASING
@@ -285,66 +259,7 @@ func retreat_after_hit(target: Node2D) -> void:
 	_charge_timer = maxf(charge_cooldown, 0.0)
 	enemy.velocity = Vector2.ZERO
 
-	_try_warned_teleport()
 	_update_sprite()
-
-
-func _try_warned_teleport() -> void:
-	# A ready teleport stays available until the player enters this enemy's room.
-	if enemy.has_meta("spawn_section") and not _player_in_spawn_section():
-		return
-	if _teleport_timer > 0.0 or _teleport_retry_timer > 0.0:
-		return
-	var minimum := maxf(teleport_min_distance, 1.0)
-	if not _teleport_to_clear_spot(minimum, maxf(teleport_max_distance, minimum), teleport_attempts):
-		_teleport_retry_timer = 0.5
-		return
-	state = State.TELEPORT_WARNING
-	_state_time = maxf(teleport_warning_duration, 0.05)
-	enemy.velocity = Vector2.ZERO
-	_slash_playing = false
-	_show_landing_marker()
-
-
-func _teleport_to_clear_spot(minimum: float, maximum: float, attempts: int) -> bool:
-	if not is_instance_valid(player) or _collision == null or _collision.shape == null:
-		return false
-	var query := PhysicsShapeQueryParameters2D.new()
-	query.shape = _collision.shape
-	query.collision_mask = enemy.collision_mask
-	query.exclude = [enemy.get_rid()]
-	query.margin = 4.0
-	# Random placement first, then cover the ring systematically. Small rooms can
-	# have only a narrow strip of valid retreat space that random samples miss.
-	var random_attempts := maxi(attempts, 0)
-	for attempt in range(random_attempts + 320):
-		var angle: float
-		var radius: float
-		if attempt < random_attempts:
-			angle = randf() * TAU
-			radius = randf_range(minimum, maximum)
-		else:
-			var sample_index := attempt - random_attempts
-			angle = float(sample_index % 64) * TAU / 64.0
-			radius = lerpf(minimum, maximum, floorf(sample_index / 64.0) / 4.0)
-		var destination := player.global_position + Vector2.RIGHT.rotated(angle) * radius
-		if _near_other_enemy(destination):
-			continue
-		if destination.distance_to(enemy.global_position) < teleport_min_displacement:
-			continue
-		# Check the entire body, including the collision shape's offset.
-		query.transform = _collision.global_transform
-		query.transform.origin += destination - enemy.global_position
-		if not enemy.get_world_2d().direct_space_state.intersect_shape(query, 1).is_empty():
-			continue
-		# Stay on the player's side of walls and closed doors.
-		if not _has_clear_path(player.global_position, destination):
-			continue
-		_teleport_destination = destination
-		return true
-	return false
-
-
 func _separation_push() -> Vector2:
 	var push := Vector2.ZERO
 	for other in get_tree().get_nodes_in_group("enemies"):
@@ -355,14 +270,6 @@ func _separation_push() -> Vector2:
 		if distance > 0.01 and distance < separation_distance:
 			push += away / distance * (1.0 - distance / separation_distance)
 	return push.limit_length()
-
-
-func _near_other_enemy(destination: Vector2) -> bool:
-	for other in get_tree().get_nodes_in_group("enemies"):
-		if other != enemy and other is Node2D and not other.is_queued_for_deletion():
-			if destination.distance_to((other as Node2D).global_position) < separation_distance:
-				return true
-	return false
 
 
 func _has_clear_path(origin: Vector2, destination: Vector2) -> bool:
@@ -376,7 +283,7 @@ func _has_clear_path(origin: Vector2, destination: Vector2) -> bool:
 
 
 func _update_sprite() -> void:
-	_attack_warning.visible = state == State.WINDUP or state == State.TELEPORT_WARNING
+	_attack_warning.visible = state == State.WINDUP
 	if _sprite == null:
 		return
 	if absf(enemy.velocity.x) > 10.0:
@@ -409,79 +316,27 @@ func _on_animation_finished() -> void:
 		_update_sprite()
 
 
-func _play_teleport_effect(reverse: bool = false) -> void:
+func play_spawn_arrival() -> void:
 	if _sprite == null or _sprite.sprite_frames == null:
 		return
 	if not _sprite.sprite_frames.has_animation("teleport"):
 		return
-	# Animate departure/arrival independently so the enemy can charge immediately.
+
+	enemy.process_mode = Node.PROCESS_MODE_DISABLED
+	_sprite.hide()
 	var effect := AnimatedSprite2D.new()
-	effect.name = "TeleportArrivalEffect" if reverse else "TeleportEffect"
 	effect.sprite_frames = _sprite.sprite_frames
 	effect.centered = _sprite.centered
 	effect.offset = _sprite.offset
 	effect.flip_h = _sprite.flip_h
-	effect.flip_v = _sprite.flip_v
 	effect.z_index = enemy.z_index + _sprite.z_index
 	enemy.get_parent().add_child(effect)
 	effect.global_transform = _sprite.global_transform
 	effect.animation_finished.connect(effect.queue_free, CONNECT_ONE_SHOT)
-	if reverse:
-		effect.play("teleport", -1.0, true)
-	else:
-		effect.play("teleport", 1.0, false)
-
-func _show_landing_marker() -> void:
-	_clear_landing_marker()
-	_landing_marker = Node2D.new()
-	_landing_marker.set_script(preload("res://scripts/combat/teleport_marker.gd"))
-	_landing_marker.name = "TeleportLandingMarker"
-	enemy.add_child(_landing_marker)
-	_landing_marker.top_level = true
-	_landing_marker.global_position = _teleport_destination
-	_landing_marker.z_index = 8
+	effect.animation_finished.connect(_finish_spawn_arrival, CONNECT_ONE_SHOT)
+	effect.play(&"teleport", -3.0, true)
 
 
-func _clear_landing_marker() -> void:
-	if is_instance_valid(_landing_marker):
-		_landing_marker.queue_free()
-	_landing_marker = null
-
-
-func _finish_warned_teleport() -> void:
-	_clear_landing_marker()
-	_chase_path.clear()
-	# The player or another enemy may have moved onto the advertised spot.
-	var query := PhysicsShapeQueryParameters2D.new()
-	query.shape = _collision.shape
-	query.transform = _collision.global_transform
-	query.transform.origin += _teleport_destination - enemy.global_position
-	query.collision_mask = enemy.collision_mask
-	query.exclude = [enemy.get_rid()]
-	query.margin = 4.0
-	var blocked := not enemy.get_world_2d().direct_space_state.intersect_shape(query, 1).is_empty()
-	var left_room := enemy.has_meta("spawn_section") and not _player_in_spawn_section()
-	var too_close := player.global_position.distance_to(_teleport_destination) < teleport_min_distance * 0.75
-	if blocked or left_room or too_close or not _has_clear_path(player.global_position, _teleport_destination):
-		state = State.CHASING
-		_teleport_retry_timer = 0.5
-		return
-	_execute_teleport()
-	_engaged = true
-	_charge_direction = enemy.global_position.direction_to(player.global_position)
-	state = State.CHARGING
-	_state_time = maxf(charge_duration, 0.0)
-	enemy.velocity = _charge_direction * charge_speed
-	_play_slash()
-	AudioManager.play_sfx(&"knife_slash", enemy.global_position)
-
-
-func _execute_teleport() -> void:
-	_play_teleport_effect()
-	enemy.global_position = _teleport_destination
-	enemy.reset_physics_interpolation()
-	_play_teleport_effect(true)
-	# Every completed teleport gets a cue, independent of hits and camera distance.
-	AudioManager.play_sfx(&"enemy_teleport")
-	_teleport_timer = maxf(teleport_cooldown, 0.0)
-	_teleport_retry_timer = 0.0
+func _finish_spawn_arrival() -> void:
+	_sprite.show()
+	enemy.process_mode = Node.PROCESS_MODE_INHERIT

@@ -25,6 +25,8 @@
 [ext_resource type="PackedScene" path="res://scenes/HUD.tscn" id="40_health_hud"]
 [ext_resource type="Script" uid="uid://cwsiftw5afmgi" path="res://scripts/audio/player_state_audio.gd" id="40_state_audio"]
 
+[ext_resource type="Script" path="res://scripts/ExtractionPortal.gd" id="50_extraction"]
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_5poiv"]
 atlas = ExtResource("18_dp3eg")
 region = Rect2(0, 0, 106, 128)
@@ -720,8 +722,8 @@ polygon = PackedVector2Array(-1080, -700, -510, -700, -510, -440, -1080, -440)
 [node name="CargoRoom" type="Area2D" parent="Enemies" unique_id=1652431047]
 collision_layer = 0
 script = ExtResource("9_sections")
-minimum_enemies = 1
-maximum_enemies = 1
+minimum_enemies = 2
+maximum_enemies = 2
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/CargoRoom" unique_id=1568789843]
 polygon = PackedVector2Array(-395, -700, 65, -700, 65, -440, -395, -440)
@@ -729,21 +731,50 @@ polygon = PackedVector2Array(-395, -700, 65, -700, 65, -440, -395, -440)
 [node name="MessHall" type="Area2D" parent="Enemies" unique_id=920052650]
 collision_layer = 0
 script = ExtResource("9_sections")
-minimum_enemies = 4
+minimum_enemies = 5
+maximum_enemies = 5
 player_clearance = 200.0
-enemy_spacing = 320.0
+enemy_spacing = 250.0
 spawn_layout = 1
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/MessHall" unique_id=1861908371]
-polygon = PackedVector2Array(-1080, 0, 140, 0, 140, 990, -1080, 990)
+polygon = PackedVector2Array(-1080, 0, -470, 0, -470, 990, -1080, 990)
+
+[node name="MessHallFarSide" type="Area2D" parent="Enemies"]
+collision_layer = 0
+script = ExtResource("9_sections")
+minimum_enemies = 6
+maximum_enemies = 6
+player_clearance = 200.0
+enemy_spacing = 280.0
+spawn_layout = 1
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/MessHallFarSide"]
+polygon = PackedVector2Array(-470, 0, 140, 0, 140, 990, -470, 990)
+
+
+[node name="LowerRightHall" type="Area2D" parent="Enemies"]
+collision_layer = 0
+script = ExtResource("9_sections")
+minimum_enemies = 4
+maximum_enemies = 4
+player_clearance = 200.0
+enemy_spacing = 250.0
+spawn_layout = 1
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/LowerRightHall"]
+polygon = PackedVector2Array(140, 410, 1090, 410, 1090, 990, 140, 990)
+
 
 [node name="ObservationRoom" type="Area2D" parent="Enemies" unique_id=2116962393]
 collision_layer = 0
 script = ExtResource("9_sections")
 minimum_enemies = 4
+maximum_enemies = 4
 player_clearance = 200.0
 enemy_spacing = 280.0
 spawn_layout = 2
+wave_count = 2
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/ObservationRoom" unique_id=1154565772]
 polygon = PackedVector2Array(280, -700, 990, -700, 990, 0, 280, 0)
@@ -820,3 +851,27 @@ scale = Vector2(0.18000007, 0.18899979)
 shape = SubResource("CircleShape2D_o6kvn")
 
 [node name="HUD" parent="." unique_id=1610942088 instance=ExtResource("40_health_hud")]
+
+[node name="ExtractionPortal" type="Area2D" parent="."]
+position = Vector2(678, -356)
+z_index = 4
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+script = ExtResource("50_extraction")
+
+[node name="Trigger" type="CollisionPolygon2D" parent="ExtractionPortal"]
+polygon = PackedVector2Array(-285, 0, -200, -135, 0, -195, 200, -135, 285, 0, 200, 135, 0, 195, -200, 135)
+
+[node name="Prompt" type="Label" parent="ExtractionPortal"]
+visible = false
+offset_left = -285.0
+offset_right = 285.0
+offset_top = -225.0
+offset_bottom = -185.0
+mouse_filter = 2
+theme_override_colors/font_outline_color = Color(0.04, 0.08, 0.13, 1)
+theme_override_constants/outline_size = 7
+theme_override_font_sizes/font_size = 27
+horizontal_alignment = 1

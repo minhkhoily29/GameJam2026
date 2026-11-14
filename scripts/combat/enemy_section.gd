@@ -1,5 +1,5 @@
 extends Area2D
-## A fresh wave on entry after visiting a different section.
+## Telegraph each wave before its enemies arrive.
 signal section_spawned(count: int)
 signal section_cleared
 
@@ -12,74 +12,138 @@ signal section_cleared
 enum SpawnLayout { RANDOM, SPREAD, CORNERS }
 @export var spawn_layout: SpawnLayout = SpawnLayout.RANDOM
 
-var has_spawned: bool = false
+@export_range(1, 10) var wave_count: int = 1
+@export var center_trigger_radius: float = 0.0
+@export var spawn_warning_duration: float = 0.65
+
+const REENTRY_DELAY: float = 1.0
+
+var _started: bool = false
+var _outside_time: float = 0.0
+var _warning_time: float = 0.0
+var _retry_time: float = 0.0
+var _landing_points: Array[Vector2] = []
+var _markers: Array[Node2D] = []
 var wave_number: int = 0
 var enemies_remaining: int = 0
 var _player: CharacterBody2D
-var _active: bool = false
-var _has_entered: bool = false
-var _enemies: Array[CharacterBody2D] = []
 @onready var region: CollisionPolygon2D = $CollisionPolygon2D
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if not is_instance_valid(_player):
 		_player = get_tree().get_first_node_in_group("player") as CharacterBody2D
-	if _player == null:
+	if _player == null or _player.get("is_dead") == true:
+		_clear_markers()
 		return
-	# Prepare the first wave before entry so enemies can be seen and shot through
-	# an open doorway. Keep their physics bodies active outside the current room.
-	if not has_spawned:
-		_spawn_wave()
-	var inside := overlaps_body(_player) and Geometry2D.is_point_in_polygon(region.to_local(_player.global_position), region.polygon)
-	if inside != _active:
-		_active = inside
-		if inside:
-			var previous: Node = _player.get_meta("enemy_current_section") if _player.has_meta("enemy_current_section") else null
-			if previous != self:
-				_player.set_meta("enemy_current_section", self)
-				if _has_entered:
-					_spawn_wave()
-			_has_entered = true
 
-func _spawn_wave() -> void:
-	if enemy_scene == null:
+	var point := region.to_local(_player.global_position)
+	if not Geometry2D.is_point_in_polygon(point, region.polygon):
+		_outside_time += delta
 		return
-	# Replace survivors on a return visit so waves never stack above room limits.
-	for enemy in _enemies:
-		if is_instance_valid(enemy):
-			enemy.free()
-	_enemies.clear()
+
+	if not _started:
+		if center_trigger_radius > 0.0 and point.distance_to(_room_bounds().get_center()) > center_trigger_radius:
+			return
+		_started = true
+	elif _outside_time >= REENTRY_DELAY:
+		_outside_time = 0.0
+		_reset_encounter()
+		return
+	_outside_time = 0.0
+
+	if not _landing_points.is_empty():
+		_warning_time -= delta
+		if _warning_time <= 0.0:
+			_land_wave()
+	elif enemies_remaining == 0 and wave_number < wave_count:
+		_retry_time -= delta
+		if _retry_time <= 0.0:
+			_prepare_wave()
+
+
+func _reset_encounter() -> void:
+	_clear_markers()
+	_landing_points.clear()
+	for child in get_children():
+		if child is Enemy:
+			if child.died.is_connected(_on_enemy_died):
+				child.died.disconnect(_on_enemy_died)
+			child.queue_free()
+	wave_number = 0
 	enemies_remaining = 0
-	has_spawned = true
-	wave_number += 1
-	var count := randi_range(minimum_enemies, maxi(minimum_enemies, maximum_enemies))
-	var points: Array[Vector2] = []
+	_retry_time = 0.0
+
+
+func _room_bounds() -> Rect2:
 	var bounds := Rect2(region.polygon[0], Vector2.ZERO)
 	for point in region.polygon:
 		bounds = bounds.expand(point)
+	return bounds
+
+
+func _prepare_wave() -> void:
+	if enemy_scene == null:
+		return
+	var preview := enemy_scene.instantiate() as CharacterBody2D
+	var collision := preview.get_node("CollisionShape2D") as CollisionShape2D
+	var count := randi_range(minimum_enemies, maxi(minimum_enemies, maximum_enemies))
+	var bounds := _room_bounds()
+	var points: Array[Vector2] = []
 	for i in range(count):
-		var enemy := enemy_scene.instantiate() as CharacterBody2D
-		if enemy == null:
-			push_error("Section enemy scene must be a CharacterBody2D.")
-			break
-		var collision := enemy.get_node_or_null("CollisionShape2D") as CollisionShape2D
-		if collision == null or collision.shape == null:
-			enemy.free()
-			push_error("Section enemy needs a CollisionShape2D.")
-			break
-		var destination = _find_spawn_point(bounds, i, enemy, collision, points)
+		var destination = _find_spawn_point(bounds, i, preview, collision, points)
 		if destination == null:
-			enemy.free()
-			push_warning("Could not find a clear enemy spawn in section %s." % name)
-			continue
+			preview.free()
+			_retry_time = 0.25
+			return
+		points.append(destination)
+	preview.free()
+
+	_landing_points = points
+	_warning_time = spawn_warning_duration
+	for destination in points:
+		var marker := preload("res://scripts/combat/teleport_marker.gd").new() as Node2D
+		marker.position = to_local(destination)
+		marker.z_index = 8
+		add_child(marker)
+		_markers.append(marker)
+
+
+func _land_wave() -> void:
+	_clear_markers()
+	var preview := enemy_scene.instantiate() as CharacterBody2D
+	var collision := preview.get_node("CollisionShape2D") as CollisionShape2D
+	var query := PhysicsShapeQueryParameters2D.new()
+	query.shape = collision.shape
+	query.collision_mask = preview.collision_mask
+	query.margin = 6.0
+	for destination in _landing_points:
+		query.transform = Transform2D(0.0, destination) * collision.transform
+		if not get_world_2d().direct_space_state.intersect_shape(query, 1).is_empty():
+			preview.free()
+			_landing_points.clear()
+			_retry_time = 0.25
+			return
+	preview.free()
+
+	wave_number += 1
+	enemies_remaining = _landing_points.size()
+	for destination in _landing_points:
+		var enemy := enemy_scene.instantiate() as CharacterBody2D
 		enemy.set_meta("spawn_section", self)
 		enemy.position = to_local(destination)
 		enemy.died.connect(_on_enemy_died, CONNECT_ONE_SHOT)
 		add_child(enemy)
-		_enemies.append(enemy)
-		points.append(destination)
-		enemies_remaining += 1
+		enemy.get_node("EnemyMovement").play_spawn_arrival()
+	_landing_points.clear()
+	AudioManager.play_sfx(&"enemy_teleport")
 	section_spawned.emit(enemies_remaining)
+
+
+func _clear_markers() -> void:
+	for marker in _markers:
+		marker.queue_free()
+	_markers.clear()
+
 
 func _find_spawn_point(bounds: Rect2, index: int, enemy: CharacterBody2D, collision: CollisionShape2D, points: Array[Vector2]) -> Variant:
 	var space := get_world_2d().direct_space_state
@@ -134,5 +198,5 @@ func contains_body_position(destination: Vector2, collision: CollisionShape2D) -
 
 func _on_enemy_died() -> void:
 	enemies_remaining -= 1
-	if enemies_remaining == 0:
+	if enemies_remaining == 0 and wave_number >= wave_count:
 		section_cleared.emit()
