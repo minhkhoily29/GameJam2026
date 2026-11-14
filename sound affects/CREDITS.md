@@ -17,6 +17,10 @@ files can be traced and replaced. Pack license files are included under kenney/.
 | kenney/knife_slash.wav | knifeSlice.ogg, https://kenney.nl/assets/rpg-audio | Kenney, CC0 |
 | kenney/key_pickup.ogg | handleCoins2.ogg, https://kenney.nl/assets/rpg-audio | Kenney, CC0 |
 | kenney/door_locked.ogg | metalLatch.ogg, https://kenney.nl/assets/rpg-audio | Kenney, CC0 |
+| kenney/enemy_teleport.ogg | forceField_000.ogg, https://kenney.nl/assets/sci-fi-sounds | Kenney, CC0 |
+| opengameart/enemy_teleport_02.ogg | teleport_02.ogg, https://opengameart.org/content/50-cc0-sci-fi-sfx | rubberduck, CC0 |
+| opengameart/low_health_heartbeat.wav | heartbeat_fast_0.wav, https://opengameart.org/content/heartbeat-sounds | bart, CC0 |
+| kenney/power_up_loop.wav | engineCircular_002.ogg, https://kenney.nl/assets/sci-fi-sounds | Kenney, CC0 |
 | kenney/player_hit.ogg | impactPunch_medium_000.ogg, https://kenney.nl/assets/impact-sounds | Kenney, CC0 |
 | kenney/enemy_death.ogg | impactSoft_heavy_000.ogg, same Impact Sounds pack | Kenney, CC0 |
 
@@ -35,8 +39,11 @@ Preserve this attribution in the game's distributed credits.
 Existing project audio is reused unchanged. Its original provenance was not
 recorded in this checkout, so no new license claim is made for those files:
 
-- slime for door.ogg: player death, departure/arrival through doors; pitched and
-  quieter for enemy teleportation.
+- slime for door.ogg: player death and departure/arrival through doors.
+- opengameart/enemy_teleport_02.ogg: rubberduck teleport_02 on every successful
+  enemy teleport, including approach teleports without a hit. Uses -7 dB on SFX,
+  fixed normal pitch and no distance falloff. The Kenney forcefield is retained
+  as an unused asset; its license is in LICENSE-SCIFI.txt.
 - foot steps.ogg: only while the player actually walks, not idle or knocked back.
 - background noise.ogg: looping ship ambience, stopped when the map closes.
 - flower_pickup.wav: derived from collecting flower.mp3 with 1.416 seconds of
@@ -66,3 +73,14 @@ Ambience use separate buses. One-shots live under the audio autoload so freeing 
 pickups, or bullets does not truncate them. Simultaneous voices are capped at 32;
 pitch variation uses a separate RNG and does not affect seeded spawning. Headless
 runs skip opening audio voices.
+
+Player state loops are in scripts/audio/player_state_audio.gd. At 1 HP a heartbeat
+loops at -4 dB on SFX until healing or death. The existing brief damage flash is unchanged.
+A fast synthesized arcade power-up loop (-11 dB on SFX, with the SFX bus at -2 dB) runs
+only during the five-second cosmos buff, sitting just above the Music bus at -15 dB;
+another flower refreshes the timer without restarting or stacking the loop.
+Expiry, death, and scene exit stop it. The active power_up_hyper.wav is an original
+four-second synthesized loop made for this project, with eight bouncy arpeggio
+notes per second and alternating stereo motion. Its RMS level matches the earlier
+soft pulse, and the playback gain is unchanged. The earlier power_up_pulse.wav
+and Kenney engine-derived power_up_loop.wav are retained as unused assets.

@@ -3,24 +3,26 @@ extends Node
 enum State { CHASING, WINDUP, CHARGING, RECOVERING, TELEPORT_WARNING }
 
 @export_category("Chase")
-@export var normal_speed: float = 200.0
+@export var normal_speed: float = 270.0
 @export var stop_distance: float = 70.0
-@export var detection_range: float = 300.0
-@export var disengage_range: float = 360.0
+@export var detection_range: float = 520.0
+@export var disengage_range: float = 650.0
 @export var separation_distance: float = 130.0
 @export var separation_strength: float = 0.8
+@export var acceleration: float = 1200.0
+@export var deceleration: float = 1600.0
 @export_category("Charge")
-@export var charge_speed: float = 420.0
-@export var charge_range: float = 260.0
+@export var charge_speed: float = 540.0
+@export var charge_range: float = 380.0
 @export var charge_windup: float = 0.45
-@export var charge_duration: float = 0.65
+@export var charge_duration: float = 0.8
 @export var recovery_duration: float = 0.6
 @export var charge_cooldown: float = 2.5
 @export_category("Teleport near player")
 @export var teleport_attempts: int = 60
 @export var teleport_cooldown: float = 5.0
 @export var teleport_warning_duration: float = 0.4
-@export var teleport_trigger_distance: float = 240.0
+@export var teleport_trigger_distance: float = 300.0
 @export var teleport_min_distance: float = 100.0
 @export var teleport_max_distance: float = 150.0
 @export var teleport_min_displacement: float = 80.0
@@ -69,7 +71,7 @@ func _physics_process(delta: float) -> void:
 			return
 	_charge_timer = maxf(_charge_timer - delta, 0.0)
 	_state_time = maxf(_state_time - delta, 0.0)
-	enemy.velocity = Vector2.ZERO
+	var desired_velocity := Vector2.ZERO
 	_teleport_timer = maxf(_teleport_timer - delta, 0.0)
 	_teleport_retry_timer = maxf(_teleport_retry_timer - delta, 0.0)
 	var offset := player.global_position - enemy.global_position
@@ -83,6 +85,7 @@ func _physics_process(delta: float) -> void:
 		state = State.CHASING
 		_state_time = 0.0
 		_slash_playing = false
+		_move_smoothly(Vector2.ZERO, delta)
 		_update_sprite()
 		return
 	if state in [State.CHASING, State.CHARGING] and _teleport_timer <= 0.0 and _teleport_retry_timer <= 0.0:
@@ -100,6 +103,8 @@ func _physics_process(delta: float) -> void:
 		State.TELEPORT_WARNING:
 			if _state_time <= 0.0:
 				_finish_warned_teleport()
+				if state == State.CHARGING:
+					desired_velocity = _charge_direction * charge_speed
 		State.CHASING:
 			# Stopping distance only pauses the chase; it must never block attacking.
 			if offset.length() <= charge_range and not offset.is_zero_approx() and _charge_timer <= 0.0 and _has_clear_path(enemy.global_position, player.global_position):
@@ -108,7 +113,8 @@ func _physics_process(delta: float) -> void:
 				state = State.WINDUP
 				_state_time = maxf(charge_windup, 0.0)
 			elif offset.length() > stop_distance:
-				enemy.velocity = (offset.normalized() + _separation_push() * separation_strength).normalized() * normal_speed
+				var approach_speed := normal_speed * clampf((offset.length() - stop_distance) / 90.0, 0.15, 1.0)
+				desired_velocity = (offset.normalized() + _separation_push() * separation_strength).normalized() * approach_speed
 		State.WINDUP:
 			if _state_time <= 0.0:
 				state = State.CHARGING
@@ -119,17 +125,11 @@ func _physics_process(delta: float) -> void:
 			if _state_time <= 0.0:
 				_begin_recovery()
 			else:
-				enemy.velocity = _charge_direction * charge_speed
+				desired_velocity = _charge_direction * charge_speed
 		State.RECOVERING:
 			if _state_time <= 0.0:
 				state = State.CHASING
-	var section: Node = enemy.get_meta("spawn_section") if enemy.has_meta("spawn_section") else null
-	if is_instance_valid(section) and _collision != null:
-		if not section.contains_body_position(enemy.global_position + enemy.velocity * delta, _collision):
-			enemy.velocity = Vector2.ZERO
-			if state == State.CHARGING:
-				_begin_recovery()
-	enemy.move_and_slide()
+	_move_smoothly(desired_velocity, delta)
 	for index in range(enemy.get_slide_collision_count()):
 		var body := enemy.get_slide_collision(index).get_collider() as Node2D
 		if body != null and body.is_in_group("player") and body.has_method("receive_enemy_hit"):
@@ -138,6 +138,17 @@ func _physics_process(delta: float) -> void:
 	if state == State.CHARGING and enemy.get_slide_collision_count() > 0:
 		_begin_recovery()
 	_update_sprite()
+
+
+func _move_smoothly(target_velocity: Vector2, delta: float) -> void:
+	if state == State.CHARGING:
+		enemy.velocity = target_velocity
+	else:
+		var rate := deceleration if target_velocity.length_squared() < enemy.velocity.length_squared() else acceleration
+		enemy.velocity = enemy.velocity.move_toward(target_velocity, maxf(rate, 0.0) * delta)
+	# Spawn areas are not invisible movement barriers. Physical walls and closed
+	# doors constrain pursuit, including when the player steps into a passage.
+	enemy.move_and_slide()
 
 
 func _begin_recovery() -> void:
@@ -220,7 +231,9 @@ func _near_other_enemy(destination: Vector2) -> bool:
 
 
 func _has_clear_path(origin: Vector2, destination: Vector2) -> bool:
-	var ray := PhysicsRayQueryParameters2D.create(origin, destination, enemy.collision_mask)
+	# Other enemies should not hide the player from an astronaut's vision.
+	var vision_mask := enemy.collision_mask & ~enemy.collision_layer
+	var ray := PhysicsRayQueryParameters2D.create(origin, destination, vision_mask)
 	ray.exclude = [enemy.get_rid()]
 	if player is CollisionObject2D:
 		ray.exclude = [enemy.get_rid(), (player as CollisionObject2D).get_rid()]
@@ -230,7 +243,7 @@ func _has_clear_path(origin: Vector2, destination: Vector2) -> bool:
 func _update_sprite() -> void:
 	if _sprite == null:
 		return
-	if absf(enemy.velocity.x) > 0.01:
+	if absf(enemy.velocity.x) > 10.0:
 		_sprite.flip_h = enemy.velocity.x < 0.0
 	if _slash_playing:
 		return
@@ -318,7 +331,8 @@ func _finish_warned_teleport() -> void:
 	enemy.global_position = _teleport_destination
 	enemy.reset_physics_interpolation()
 	_play_teleport_effect(true)
-	AudioManager.play_sfx(&"enemy_teleport", enemy.global_position)
+	# Every completed teleport gets a cue, independent of hits and camera distance.
+	AudioManager.play_sfx(&"enemy_teleport")
 	_teleport_timer = maxf(teleport_cooldown, 0.0)
 	_charge_direction = enemy.global_position.direction_to(player.global_position)
 	state = State.CHARGING
