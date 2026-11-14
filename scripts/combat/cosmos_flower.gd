@@ -1,5 +1,5 @@
 extends Area2D
-@export var damage_up: float = 1.5
+@export var damage_up: float = 2.0
 @export var speed_up: float = 2.0
 var collected: bool = false
 func _ready() -> void:
