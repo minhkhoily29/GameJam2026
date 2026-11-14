@@ -21,10 +21,6 @@ signal hit_by_enemy(source_position: Vector2)
 
 var facing_direction := Vector2.RIGHT
 var move_input := Vector2.ZERO
-var _controller_move_input := Vector2.ZERO
-var _keyboard_was_active: bool = false
-# Temporary local preview only. Normal launches accept the ESP controller.
-var _desktop_preview_enabled: bool = OS.get_cmdline_user_args().has("--desktop-preview")
 var _knockback_velocity := Vector2.ZERO
 var _knockback_time: float = 0.0
 var _enemy_hit_timer: float = 0.0
@@ -71,24 +67,6 @@ func _die() -> void:
 	print("Game over: player has no health remaining.")
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if not _desktop_preview_enabled:
-		return
-	if is_dead:
-		if event is InputEventKey and event.keycode == KEY_R and event.pressed and not event.echo:
-			get_tree().reload_current_scene()
-		return
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		var aim := global_position.direction_to(get_global_mouse_position())
-		if not aim.is_zero_approx():
-			facing_direction = aim
-		shoot()
-	elif event is InputEventKey and event.keycode == KEY_SPACE and event.pressed and not event.echo:
-		shoot()
-	elif event is InputEventKey and event.keycode == KEY_E and event.pressed and not event.echo:
-		try_door_teleport()
-
-
 # Called by ControllerUDP when a controller packet arrives.
 func update_aim(raw_x: int, raw_y: int) -> void:
 	if is_dead:
@@ -104,7 +82,6 @@ func update_aim(raw_x: int, raw_y: int) -> void:
 	var strength := minf(stick.length(), 1.0)
 
 	if strength <= deadzone:
-		_controller_move_input = Vector2.ZERO
 		move_input = Vector2.ZERO
 		return
 
@@ -113,22 +90,6 @@ func update_aim(raw_x: int, raw_y: int) -> void:
 	# Smoothly scale movement outside the deadzone.
 	var adjusted_strength := (strength - deadzone) / (1.0 - deadzone)
 	move_input = facing_direction * adjusted_strength
-	_controller_move_input = move_input
-
-
-func _update_keyboard_movement() -> void:
-	if not _desktop_preview_enabled:
-		return
-	var keyboard := Vector2(
-		float(Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT)) - float(Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT)),
-		float(Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN)) - float(Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP))
-	).normalized()
-	if not keyboard.is_zero_approx():
-		move_input = keyboard
-		facing_direction = keyboard
-	elif _keyboard_was_active:
-		move_input = _controller_move_input
-	_keyboard_was_active = not keyboard.is_zero_approx()
 
 
 func _physics_process(delta: float) -> void:
@@ -140,7 +101,6 @@ func _physics_process(delta: float) -> void:
 	if is_dead or is_teleporting:
 		velocity = Vector2.ZERO
 		return
-	_update_keyboard_movement()
 	if _knockback_time > 0.0:
 		velocity = _knockback_velocity
 		_knockback_time = maxf(_knockback_time - delta, 0.0)
