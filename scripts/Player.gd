@@ -13,6 +13,7 @@ signal died
 @export var move_speed: float = 250.0
 @export var deadzone: float = 0.2
 @export var invert_y: bool = false
+@export var keyboard_enabled: bool = true
 @export var walk_animation: StringName = &"default"
 @export_category("Enemy knockback")
 @export var knockback_speed: float = 460.0
@@ -102,6 +103,20 @@ func update_aim(raw_x: int, raw_y: int) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if keyboard_enabled and not is_dead and not is_teleporting:
+		var keyboard_direction := Input.get_vector(
+			"ui_left",
+			"ui_right",
+			"ui_up",
+			"ui_down"
+		)
+
+		if keyboard_direction != Vector2.ZERO:
+			move_input = keyboard_direction
+			facing_direction = keyboard_direction.normalized()
+		else:
+			move_input = Vector2.ZERO
+			
 	_footstep_time = maxf(_footstep_time - delta, 0.0)
 	_update_cosmos_buff(delta)
 	_enemy_hit_timer = maxf(_enemy_hit_timer - delta, 0.0)
@@ -311,3 +326,15 @@ func _on_player_animation_finished() -> void:
 	if is_dead or is_teleporting:
 		return
 	sprite.play(walk_animation if get_real_velocity().length() > 1.0 else &"idle")
+
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if not keyboard_enabled or is_dead or is_teleporting:
+		return
+
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_SPACE:
+			shoot()
+
+		elif event.keycode == KEY_E:
+			try_door_teleport()

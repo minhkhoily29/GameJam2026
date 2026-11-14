@@ -26,7 +26,7 @@ func _ready() -> void:
 	_rng.randomize()
 	_ensure_bus(&"SFX", -2.0)
 	_ensure_bus(&"Ambience", -34.0)
-	_ensure_bus(&"Music", -28.0)
+	_ensure_bus(&"Music", -15.0)
 
 func _ensure_bus(bus_name: StringName, volume: float) -> void:
 	if AudioServer.get_bus_index(bus_name) < 0:
@@ -94,7 +94,7 @@ func start_ambience() -> void:
 		return
 	if not is_instance_valid(_music):
 		_music = AudioStreamPlayer.new()
-		var theme := preload("res://sound affects/music/alien_vanishing_point.wav")
+		var theme := preload("res://sound affects/music/Intense background battle music.wav")
 		theme.loop_mode = AudioStreamWAV.LOOP_FORWARD
 		theme.loop_begin = 0
 		theme.loop_end = roundi(theme.get_length() * theme.mix_rate)

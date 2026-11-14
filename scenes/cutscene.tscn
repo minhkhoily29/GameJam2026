@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://dkj48suvmncgh"]
+
+[ext_resource type="VideoStream" uid="uid://dk1jdy3q3nalq" path="res://assets/cutscene intro.ogv" id="1_a320b"]
+[ext_resource type="Script" uid="uid://dsk1x1awtqwu2" path="res://video_stream_player.gd" id="2_0sipp"]
+
+[node name="Cutscene" type="Node2D" unique_id=193060398]
+
+[node name="VideoStreamPlayer" type="VideoStreamPlayer" parent="." unique_id=1063791572]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 1152.0
+offset_bottom = 720.0
+grow_horizontal = 2
+grow_vertical = 2
+stream = ExtResource("1_a320b")
+autoplay = true
+expand = true
+script = ExtResource("2_0sipp")
+
+[connection signal="finished" from="VideoStreamPlayer" to="VideoStreamPlayer" method="_on_finished"]
