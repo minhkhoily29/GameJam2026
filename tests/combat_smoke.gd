@@ -88,4 +88,3 @@ func run_checks() -> void:
 	await process_frame
 	print("Snot combat checks: ", "PASS" if failures == 0 else "FAIL")
 	quit(failures)
-

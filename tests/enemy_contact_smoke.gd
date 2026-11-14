@@ -43,4 +43,3 @@ func run_checks() -> void:
 	Engine.time_scale = 1.0
 	print("Actual map contact checks: ", "PASS" if failures == 0 else "FAIL", " (8 natural/close-range encounters)")
 	quit(failures)
-

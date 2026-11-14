@@ -81,5 +81,3 @@ func run_checks() -> void:
 		await process_frame
 	print("Section spawning checks: ", "PASS" if failures == 0 else "FAIL", " (", batches, " room batches)")
 	quit(failures)
-
-
