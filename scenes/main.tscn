@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://boskggorwimm3"]
 
+[ext_resource type="Script" path="res://scripts/audio/player_state_audio.gd" id="40_state_audio"]
+
 [ext_resource type="Script" uid="uid://c8x6fslv15gol" path="res://scripts/Player.gd" id="1_0wfyh"]
 [ext_resource type="Texture2D" uid="uid://dd7wehh4u1ixd" path="res://assets/ALIEN_MAP.png" id="1_tbgi4"]
 [ext_resource type="Script" uid="uid://cw6dwya31t5a1" path="res://scripts/ControllerUDP.gd" id="2_sugp2"]
@@ -675,6 +677,9 @@ position = Vector2(-789, -575)
 collision_mask = 3
 script = ExtResource("1_0wfyh")
 
+[node name="StateAudio" type="Node" parent="CharacterBody2D"]
+script = ExtResource("40_state_audio")
+
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CharacterBody2D" unique_id=1160666951]
 scale = Vector2(0.31775007, 0.33249998)
 sprite_frames = SubResource("SpriteFrames_o6kvn")
@@ -729,6 +734,7 @@ minimum_enemies = 4
 maximum_enemies = 6
 enemy_spacing = 320.0
 player_clearance = 200.0
+spawn_layout = 1
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/MessHall" unique_id=1861908371]
 polygon = PackedVector2Array(-1080, 0, 140, 0, 140, 990, -1080, 990)
@@ -740,6 +746,7 @@ minimum_enemies = 4
 maximum_enemies = 4
 enemy_spacing = 280.0
 player_clearance = 200.0
+spawn_layout = 2
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Enemies/ObservationRoom" unique_id=1154565772]
 polygon = PackedVector2Array(280, -700, 990, -700, 990, 0, 280, 0)

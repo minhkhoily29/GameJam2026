@@ -10,7 +10,7 @@ const SOUNDS := {
 	&"enemy_death": [preload("res://sound affects/kenney/enemy_death.ogg"), -10.0],
 	&"player_death": [preload("res://sound affects/slime for door.ogg"), -5.0],
 	&"door_slide": [preload("res://sound affects/slime for door.ogg"), -9.0],
-	&"enemy_teleport": [preload("res://sound affects/slime for door.ogg"), -17.0],
+	&"enemy_teleport": [preload("res://sound affects/opengameart/enemy_teleport_02.ogg"), -7.0],
 	&"footstep": [preload("res://sound affects/foot steps.ogg"), -19.0],
 	&"flower_pickup": [preload("res://sound affects/flower_pickup.wav"), -12.0],
 	&"key_pickup": [preload("res://sound affects/kenney/key_pickup.ogg"), -12.0],
@@ -64,7 +64,7 @@ func play_sfx(event: StringName, world_position: Variant = null) -> Node:
 	voice.bus = &"SFX"
 	voice.pitch_scale = _rng.randf_range(0.96, 1.04)
 	if event == &"enemy_teleport":
-		voice.pitch_scale *= 1.45
+		voice.pitch_scale = 1.0
 	elif event == &"player_death":
 		voice.pitch_scale *= 0.8
 	elif event == &"final_door_explosion":

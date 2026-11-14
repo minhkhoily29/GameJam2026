@@ -12,6 +12,7 @@ signal kill_count_changed(total: int)
 signal final_key_collected
 signal cosmos_time_changed(seconds_left: float, duration: float)
 signal health_changed(current_health: int, maximum_health: int)
+signal cosmos_buff_changed(active: bool)
 signal died
 
 @export var move_speed: float = 250.0
@@ -334,6 +335,7 @@ func apply_cosmos_buff(damage_up: float = 2.0, speed_up: float = 2.0) -> void:
 			_pre_cosmos_damage = snot_attack.damage_multiplier
 
 	_cosmos_time_left = COSMOS_DURATION
+	cosmos_buff_changed.emit(true)
 	move_speed = maxf(move_speed, _pre_cosmos_speed * maxf(speed_up, 1.0))
 	if is_instance_valid(snot_attack):
 		snot_attack.damage_multiplier = maxf(
@@ -364,6 +366,7 @@ func _end_cosmos_buff() -> void:
 		snot_attack.damage_multiplier = _pre_cosmos_damage
 	queue_redraw()
 	cosmos_time_changed.emit(0.0, COSMOS_DURATION)
+	cosmos_buff_changed.emit(false)
 
 
 func _draw() -> void:

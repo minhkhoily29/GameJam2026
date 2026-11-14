@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://dh0g5hruchij7"
+path="res://.godot/imported/enemy_teleport.ogg-88b9ab2644b9602f601049495d607045.oggvorbisstr"
+
+[deps]
+
+source_file="res://sound affects/kenney/enemy_teleport.ogg"
+dest_files=["res://.godot/imported/enemy_teleport.ogg-88b9ab2644b9602f601049495d607045.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

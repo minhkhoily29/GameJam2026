@@ -9,6 +9,8 @@ signal section_cleared
 @export var player_clearance: float = 140.0
 @export var enemy_spacing: float = 100.0
 @export var placement_attempts: int = 300
+enum SpawnLayout { RANDOM, SPREAD, CORNERS }
+@export var spawn_layout: SpawnLayout = SpawnLayout.RANDOM
 
 var has_spawned: bool = false
 var wave_number: int = 0
@@ -67,7 +69,8 @@ func _spawn_wave() -> void:
 			break
 		var placed := false
 		for attempt in range(placement_attempts):
-			var local_point := Vector2(randf_range(bounds.position.x, bounds.end.x), randf_range(bounds.position.y, bounds.end.y))
+			var zone := _spawn_zone(bounds, i, attempt)
+			var local_point := Vector2(randf_range(zone.position.x, zone.end.x), randf_range(zone.position.y, zone.end.y))
 			var destination := region.to_global(local_point)
 			if destination.distance_to(_player.global_position) < player_clearance:
 				continue
@@ -100,6 +103,21 @@ func _spawn_wave() -> void:
 			enemy.free()
 			push_warning("Could not find a clear enemy spawn in section %s." % name)
 	section_spawned.emit(enemies_remaining)
+
+func _spawn_zone(bounds: Rect2, index: int, attempt: int) -> Rect2:
+	if spawn_layout == SpawnLayout.SPREAD:
+		# Cover left and right, top and bottom before filling the middle cells.
+		var cells := [Vector2(0, 0), Vector2(2, 1), Vector2(0, 1), Vector2(2, 0), Vector2(1, 0), Vector2(1, 1)]
+		var size := bounds.size / Vector2(3, 2)
+		return Rect2(bounds.position + cells[index % cells.size()] * size, size)
+	if spawn_layout == SpawnLayout.CORNERS:
+		var corner := Vector2(index % 2, (index / 2) % 2)
+		# Prefer the outer quarters. Broaden within the same quadrant if the
+		# player/obstacles make a corner unsafe, never use another corner's slot.
+		var fraction := 0.25 if attempt < placement_attempts * 0.8 else 0.5
+		var size := bounds.size * fraction
+		return Rect2(bounds.position + corner * (bounds.size - size), size)
+	return bounds
 
 func contains_body_position(destination: Vector2, collision: CollisionShape2D) -> bool:
 	# Keep the full body's bounding rectangle inside the section.
