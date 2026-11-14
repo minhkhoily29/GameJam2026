@@ -1,5 +1,8 @@
 extends CharacterBody2D
 
+const COSMOS_DURATION: float = 5.0
+const COSMOS_TINT := Color(1.28, 1.10, 0.62)
+
 @export var max_health: int = 3
 var health: int = 3
 var is_dead: bool = false
@@ -7,6 +10,7 @@ var has_final_key: bool = false
 var enemies_killed: int = 0
 signal kill_count_changed(total: int)
 signal final_key_collected
+signal cosmos_time_changed(seconds_left: float, duration: float)
 signal health_changed(current_health: int, maximum_health: int)
 signal died
 
@@ -62,6 +66,8 @@ func _die() -> void:
 	if is_dead:
 		return
 	is_dead = true
+	if _cosmos_time_left > 0.0:
+		_end_cosmos_buff()
 	_sneeze_playing = false
 	AudioManager.play_sfx(&"player_death")
 	velocity = Vector2.ZERO
@@ -126,7 +132,7 @@ func _physics_process(delta: float) -> void:
 	_update_cosmos_buff(delta)
 	_enemy_hit_timer = maxf(_enemy_hit_timer - delta, 0.0)
 	_hit_flash_time = maxf(_hit_flash_time - delta, 0.0)
-	sprite.self_modulate = Color(1.0, 0.25, 0.25) if _hit_flash_time > 0.0 else Color.WHITE
+	sprite.self_modulate = Color(1.0, 0.25, 0.25) if _hit_flash_time > 0.0 else (COSMOS_TINT if _cosmos_time_left > 0.0 else Color.WHITE)
 	if is_dead or is_teleporting:
 		velocity = Vector2.ZERO
 		return
@@ -250,45 +256,71 @@ func shoot() -> void:
 	if is_dead or is_teleporting or not is_instance_valid(snot_attack):
 		return
 
-	var nearest_enemy: Enemy = null
-	var nearest_distance_squared: float = INF
+	var aim_direction := facing_direction
+	var best_distance_squared := INF
 	var shot_origin := snot_attack.global_position
 	if is_instance_valid(snot_attack.muzzle):
 		shot_origin = snot_attack.muzzle.global_position
 
+	var ballistics := snot_attack.get_projectile_ballistics()
+	var shot_range_squared := pow(ballistics.x * ballistics.y, 2.0)
 	for node in get_tree().get_nodes_in_group("enemies"):
 		var candidate := node as Enemy
-		if not is_instance_valid(candidate):
+		if candidate == null or candidate.is_queued_for_deletion():
 			continue
-		if candidate.is_queued_for_deletion() or candidate.health <= 0:
-			continue
-		if not candidate.can_process():
-			continue
-		# Room membership does not restrict shooting: use screen visibility and
-		# actual geometry so aim never locks onto enemies behind a wall.
-		if not get_viewport_rect().grow(32.0).has_point(candidate.get_global_transform_with_canvas().origin):
-			continue
-		var sight := PhysicsRayQueryParameters2D.create(shot_origin, candidate.global_position, collision_mask, [get_rid()])
-		var obstruction := get_world_2d().direct_space_state.intersect_ray(sight)
-		if not obstruction.is_empty() and obstruction.collider != candidate:
+		if candidate.health <= 0 or not candidate.can_process():
 			continue
 
-		var distance_squared := global_position.distance_squared_to(candidate.global_position)
-		if distance_squared < nearest_distance_squared:
-			nearest_distance_squared = distance_squared
-			nearest_enemy = candidate
+		var target := candidate.global_position
+		var hitbox := candidate.get_node_or_null("CollisionShape2D") as CollisionShape2D
+		if hitbox != null and not hitbox.disabled:
+			target = hitbox.global_position
+		var screen_target := get_viewport().get_canvas_transform() * target
+		if not get_viewport_rect().grow(32.0).has_point(screen_target):
+			continue
 
-	var aim_direction := facing_direction
-	if nearest_enemy != null:
-		var target_direction := shot_origin.direction_to(nearest_enemy.global_position)
-		if not target_direction.is_zero_approx():
-			aim_direction = target_direction
+		var offset := target - shot_origin
+		var distance_squared := offset.length_squared()
+		if distance_squared >= best_distance_squared or distance_squared > shot_range_squared:
+			continue
+		if offset.is_zero_approx() or not _shot_path_clear(shot_origin, target, candidate):
+			continue
+
+		var lead_time := _projectile_lead_time(offset, candidate.get_real_velocity(), ballistics.x)
+		if lead_time > 0.0 and lead_time <= ballistics.y:
+			var predicted_target := target + candidate.get_real_velocity() * lead_time
+			if _shot_path_clear(shot_origin, predicted_target, candidate):
+				target = predicted_target
+
+		best_distance_squared = distance_squared
+		aim_direction = shot_origin.direction_to(target)
 
 	if snot_attack.fire(aim_direction):
 		_play_sneeze()
 		facing_direction = aim_direction
 		if absf(aim_direction.x) > 0.05:
 			sprite.flip_h = aim_direction.x < 0.0
+
+
+
+func _shot_path_clear(origin: Vector2, target: Vector2, enemy: Enemy) -> bool:
+	var ray := PhysicsRayQueryParameters2D.create(origin, target, collision_mask, [get_rid()])
+	var hit := get_world_2d().direct_space_state.intersect_ray(ray)
+	return hit.is_empty() or hit.collider == enemy
+
+
+func _projectile_lead_time(offset: Vector2, target_velocity: Vector2, bullet_speed: float) -> float:
+	# Solve |offset + velocity * time| = bullet_speed * time.
+	var a := target_velocity.length_squared() - bullet_speed * bullet_speed
+	var b := 2.0 * offset.dot(target_velocity)
+	var c := offset.length_squared()
+	var discriminant := b * b - 4.0 * a * c
+	if discriminant < 0.0:
+		return 0.0
+	var denominator := sqrt(discriminant) - b
+	if denominator <= 0.0:
+		return 0.0
+	return 2.0 * c / denominator
 
 
 # Another flower refreshes the five-second duration without stacking multipliers.
@@ -301,13 +333,17 @@ func apply_cosmos_buff(damage_up: float = 2.0, speed_up: float = 2.0) -> void:
 		if is_instance_valid(snot_attack):
 			_pre_cosmos_damage = snot_attack.damage_multiplier
 
-	_cosmos_time_left = 5.0
+	_cosmos_time_left = COSMOS_DURATION
 	move_speed = maxf(move_speed, _pre_cosmos_speed * maxf(speed_up, 1.0))
 	if is_instance_valid(snot_attack):
 		snot_attack.damage_multiplier = maxf(
 			snot_attack.damage_multiplier,
 			_pre_cosmos_damage * maxf(damage_up, 1.0)
 		)
+	if _hit_flash_time <= 0.0:
+		sprite.self_modulate = COSMOS_TINT
+	queue_redraw()
+	cosmos_time_changed.emit(_cosmos_time_left, COSMOS_DURATION)
 
 
 func _update_cosmos_buff(delta: float) -> void:
@@ -316,9 +352,26 @@ func _update_cosmos_buff(delta: float) -> void:
 
 	_cosmos_time_left = maxf(_cosmos_time_left - delta, 0.0)
 	if _cosmos_time_left <= 0.0:
-		move_speed = _pre_cosmos_speed
-		if is_instance_valid(snot_attack):
-			snot_attack.damage_multiplier = _pre_cosmos_damage
+		_end_cosmos_buff()
+	else:
+		cosmos_time_changed.emit(_cosmos_time_left, COSMOS_DURATION)
+
+
+func _end_cosmos_buff() -> void:
+	_cosmos_time_left = 0.0
+	move_speed = _pre_cosmos_speed
+	if is_instance_valid(snot_attack):
+		snot_attack.damage_multiplier = _pre_cosmos_damage
+	queue_redraw()
+	cosmos_time_changed.emit(0.0, COSMOS_DURATION)
+
+
+func _draw() -> void:
+	if _cosmos_time_left <= 0.0:
+		return
+	draw_set_transform(Vector2(0.0, 25.0), 0.0, Vector2(1.0, 0.45))
+	draw_circle(Vector2.ZERO, 37.0, Color(1.0, 0.78, 0.27, 0.20))
+	draw_arc(Vector2.ZERO, 37.0, 0.0, TAU, 48, Color(1.0, 0.84, 0.4, 0.90), 3.0, true)
 
 
 func record_enemy_kill() -> void:

@@ -35,3 +35,20 @@ func fire(direction: Vector2) -> bool:
 	_cooldown = 1.0 / max(shots_per_second, 0.01)
 	AudioManager.play_sfx(&"snot_shoot")
 	return true
+
+# Cache the speed and lifetime from the actual projectile assigned in the scene.
+var _ballistics_scene: PackedScene
+var _ballistics := Vector2.ZERO
+
+func get_projectile_ballistics() -> Vector2:
+	if projectile_scene == _ballistics_scene:
+		return _ballistics
+	_ballistics_scene = projectile_scene
+	_ballistics = Vector2.ZERO
+	if projectile_scene != null:
+		var instance := projectile_scene.instantiate()
+		var projectile := instance as Projectile
+		if projectile != null:
+			_ballistics = Vector2(projectile.speed, projectile.lifetime)
+		instance.free()
+	return _ballistics
